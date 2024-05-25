@@ -23,12 +23,17 @@
  */
 package com.seanox.xmex;
 
+import com.seanox.xmex.acme.AcmeFilter;
+import com.seanox.xmex.content.ContentFilter;
+import com.seanox.xmex.datasource.DatasourceFilter;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
+@Import({ContentFilter.class, AcmeFilter.class, DatasourceFilter.class})
 public class Application extends SpringBootServletInitializer {
 
     public static void main(final String... options) {
