@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebMvc
-class Configurer implements WebMvcConfigurer {
+class ContentConfigurer implements WebMvcConfigurer {
 
     // Handle static content in Spring Boot
     // https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-config/static-resources.html
