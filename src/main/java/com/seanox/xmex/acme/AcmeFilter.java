@@ -6,14 +6,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
+@Order(2)
 public class AcmeFilter extends HttpFilter {
-
-    private static final int FILTER_ORDER = 2;
 
     @Override
     public void init(final FilterConfig filterConfig)
@@ -23,14 +23,6 @@ public class AcmeFilter extends HttpFilter {
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws ServletException, IOException {
-    }
-
-    @Bean
-    FilterRegistrationBean acmeFilterRegistration() {
-        final FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(new AcmeFilter());
-        registration.setOrder(FILTER_ORDER);
-        registration.addUrlPatterns("/*");
-        return registration;
+        chain.doFilter(request, response);
     }
 }
