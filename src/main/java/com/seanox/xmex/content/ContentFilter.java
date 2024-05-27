@@ -1,36 +1,78 @@
+/**
+ * LIZENZBEDINGUNGEN - Seanox Software Solutions ist ein Open-Source-Projekt,
+ * im Folgenden Seanox Software Solutions oder kurz Seanox genannt.
+ * Diese Software unterliegt der Version 2 der Apache License.
+ *
+ * XML Micro Exchange
+ * Copyright (C) 2024 Seanox Software Solutions
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.seanox.xmex.content;
 
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
-public class ContentFilter extends HttpFilter {
+@Component
+@Order(3)
+class ContentFilter extends HttpFilter {
 
-    private static final int FILTER_ORDER = 3;
+    @Autowired
+    private ContentService contentService;
 
-    @Override
-    public void init(final FilterConfig filterConfig)
-            throws ServletException {
-    }
+    // The filter mainly modifies/manipulates the request URI if it refers to a
+    // directory. Then the URL should end with a slash and if there is a default
+    // file, its content should be output without a redirect to the default file
+    // being sent to the client.
 
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws ServletException, IOException {
-    }
-
-    @Bean
-    FilterRegistrationBean contentFilterRegistration() {
-        final FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(new ContentFilter());
-        registration.setOrder(FILTER_ORDER);
-        registration.addUrlPatterns("/*");
-        return registration;
+        HttpServletRequest contentRequest = request;
+        final String contentRequestUri = request.getRequestURI();
+        final String contentRequestPath = this.contentService.getContentEntryPath(request);
+        final File contentRequestEntry = this.contentService.getContentEntry(contentRequestPath);
+        if (contentRequestEntry.isDirectory()) {
+            if (!contentRequestUri.endsWith("/")) {
+                response.sendRedirect(String.format("%s/", contentRequestUri));
+                return;
+            }
+            final File contentDirectoryDefault = this.contentService.getContentDirectoryDefault(contentRequestPath);
+            if (Objects.nonNull(contentDirectoryDefault)) {
+                contentRequest = new HttpServletRequestWrapper(contentRequest) {
+                    @Override
+                    public String getRequestURI() {
+                        return String.format("%s%s",
+                                contentRequestUri,
+                                URLEncoder.encode(contentDirectoryDefault.getName(),
+                                        StandardCharsets.UTF_8));
+                    }
+                };
+            }
+        }
+        chain.doFilter(contentRequest, response);
     }
 }
