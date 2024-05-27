@@ -45,6 +45,27 @@
     <encoding>UTF-8</encoding>
   </properties>
 
+  <profiles>
+    <profile>
+      <id>test-http</id>
+      <activation>
+        <property>
+          <name>spring.profiles.active</name>
+          <value>test-http</value>
+        </property>
+      </activation>
+    </profile>
+    <profile>
+      <id>test-https</id>
+      <activation>
+        <property>
+          <name>spring.profiles.active</name>
+          <value>test-https</value>
+        </property>
+      </activation>
+    </profile>
+  </profiles>
+
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
