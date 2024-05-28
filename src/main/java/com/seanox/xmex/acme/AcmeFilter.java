@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -50,10 +51,12 @@ class AcmeFilter extends HttpFilter {
         final String requestUri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
         if (request.isSecure()
                 && requestUri.equals(acmeService.getAcmeTokenUri())) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            final PrintWriter responseWriter = response.getWriter();
-            responseWriter.write(acmeService.getAcmeHash());
-            responseWriter.flush();
+            if (HttpMethod.GET.matches(request.getMethod().toUpperCase())) {
+                response.setStatus(HttpServletResponse.SC_OK);
+                final PrintWriter responseWriter = response.getWriter();
+                responseWriter.write(acmeService.getAcmeHash());
+                responseWriter.flush();
+            } else response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
         }
         chain.doFilter(request, response);
