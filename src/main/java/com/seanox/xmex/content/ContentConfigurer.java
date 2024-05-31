@@ -20,6 +20,7 @@
  */
 package com.seanox.xmex.content;
 
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -38,7 +39,7 @@ class ContentConfigurer implements WebMvcConfigurer {
     // https://www.baeldung.com/spring-mvc-static-resources
 
     @Override
-    public void addResourceHandlers(final ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(@NonNull final ResourceHandlerRegistry registry) {
         String contentDirectoryPath = this.contentService.getContentDirectoryPath();
         if (System.getProperty("os.name").matches("(?i)^windows\\b.*"))
             contentDirectoryPath = String.format("///%s",
