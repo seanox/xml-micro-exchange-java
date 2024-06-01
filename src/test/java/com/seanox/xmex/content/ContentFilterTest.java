@@ -3,7 +3,7 @@
  * im Folgenden Seanox Software Solutions oder kurz Seanox genannt.
  * Diese Software unterliegt der Version 2 der Apache License.
  *
- * XML Micro Exchange
+ * XMEX XML-Micro-ExchangExchange
  * Copyright (C) 2024 Seanox Software Solutions
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -35,7 +35,7 @@ import java.net.URI;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles({"test-http"})
+@ActiveProfiles({"test"})
 class ContentFilterTest {
 
     @Autowired

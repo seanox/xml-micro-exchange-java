@@ -5,6 +5,8 @@
     <echo>                                                               </echo>
     <echo>  changes    Synchronizes README.md with CHANGES               </echo>
     <echo>                                                               </echo>
+    <echo>  keystore   Creates a new keystore                            </echo>
+    <echo>                                                               </echo>
     <echo>  compile    Builds the jar files                              </echo>
     <echo>                                                               </echo>
     <echo>  test       Builds the jar files                              </echo>
@@ -20,6 +22,7 @@
 
   <property name="workspace" value="${basedir}"/>
   <property name="workspace.sources" value="${workspace}/src"/>
+  <property name="workspace.sources.test" value="${workspace.sources}/test"/>
   <property name="workspace.sources.filter" value="**/*.java,**/pom.xml"/>
   <property name="workspace.development" value="${workspace}/development"/>
   <property name="workspace.target" value="${workspace}/target"/>
@@ -83,6 +86,16 @@
       </exec>
     </sequential>
   </macrodef>
+
+  <target name="keystore">
+    <delete file="${workspace.sources.test}/keystore"/>
+    <exec executable="keytool">
+      <arg line="-genkey -alias local -dname 'CN=localhost' -ext 'SAN=DNS:local,IP:127.0.0.1'
+          -keystore '${workspace.sources.test}/keystore' -keypass changeIt -keyalg RSA -keysize 4096
+          -storetype PKCS12 -storepass changeIt
+          -validity 365"/>
+    </exec>
+  </target>
 
   <target name="changes">
     <release-info-locate/>
