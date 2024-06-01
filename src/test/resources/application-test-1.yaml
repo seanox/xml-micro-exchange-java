@@ -1,7 +1,11 @@
+server:
+  ssl:
+    enabled: on
+
 acme:
   hash: ---B
   token:
-    uri: /acme/s0123456789ABCDEF
+    uri: /acme/0123456789ABCDEF
 
 content:
   directory: ./src/test/content
