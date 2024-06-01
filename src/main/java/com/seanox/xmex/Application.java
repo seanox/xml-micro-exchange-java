@@ -23,6 +23,7 @@
  */
 package com.seanox.xmex;
 
+import jakarta.annotation.PostConstruct;
 import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.Banner;
@@ -35,9 +36,11 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.TimeZone;
+
 @Configuration
 @SpringBootApplication
-class Application extends SpringBootServletInitializer {
+public class Application extends SpringBootServletInitializer {
 
     // Enable http and https at the same time on Spring Boot
     // https://mvysny.github.io/spring-boot-enable-http-https/
@@ -46,6 +49,11 @@ class Application extends SpringBootServletInitializer {
         final SpringApplication springApplication = new SpringApplication(Application.class);
         springApplication.setBannerMode(Banner.Mode.CONSOLE);
         springApplication.run(options);
+    }
+
+    @PostConstruct
+    private void configureApplication() {
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
     }
 
     // The additional HTTP connector is only activated for HTTP-01 challenge if

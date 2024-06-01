@@ -18,7 +18,7 @@ acme:
 datasource:
   directory: ${XMEX_DATASOURCE_DIRECTORY:./data}
   service:
-    uri: ${XMEX_datasource_SERVICE_URI:./xmex!}
+    uri: ${XMEX_datasource_SERVICE_URI:/xmex!}
 
 content:
   directory: ${XMEX_CONTENT_DIRECTORY:./content}
