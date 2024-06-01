@@ -1,0 +1,4 @@
+server:
+  port: ${XMEX_SERVER_PORT:443}
+  ssl:
+    enabled: ${XMEX_SERVER_SSL_ENABLED:on}

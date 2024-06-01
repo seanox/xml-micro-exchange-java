@@ -47,20 +47,20 @@
 
   <profiles>
     <profile>
-      <id>test-http</id>
+      <id>acme</id>
       <activation>
         <property>
           <name>spring.profiles.active</name>
-          <value>test-http</value>
+          <value>acme</value>
         </property>
       </activation>
     </profile>
     <profile>
-      <id>test-https</id>
+      <id>test</id>
       <activation>
         <property>
           <name>spring.profiles.active</name>
-          <value>test-https</value>
+          <value>test</value>
         </property>
       </activation>
     </profile>
