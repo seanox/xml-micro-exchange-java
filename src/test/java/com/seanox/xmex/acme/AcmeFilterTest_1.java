@@ -78,12 +78,12 @@ class AcmeFilterTest_1 {
     }
 
     // The following HTTPS requests behave differently to the ACME requests.
-    // Normally the requests via HTTPS are ignored and answered with 404, as the
-    // AcmeFilter ignores the requests and passes them on to the ContentFilter,
-    // which does not know the ACME URI. This is different in test-1, as the
-    // ACME URI has been entered as content. It makes no sense, but it is a
-    // theoretical test that the AcmeFilter takes effect before the
-    // ContentFilter.
+    // Normally the ACME requests via HTTPS are ignored and responded with 404,
+    // because the AcmeFilter ignores the requests and passes them on to the
+    // ContentFilter, which does not know the ACME URI. This is different in
+    // profile test-1, as the ACME URI has been entered as content. It makes no
+    // sense, but it is a theoretical test that the AcmeFilter takes effect
+    // before the ContentFilter.
 
     @Test
     void testAcmeHttps_01()
