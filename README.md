@@ -104,14 +104,10 @@ specific language governing permissions and limitations under the License.
 
 
 # System Requirement
-TODO:
+- Java 11 or higher
 
 
 # Downloads
-TODO:
-
-
-# Distributions for Microsoft Windows
 TODO:
 
 
