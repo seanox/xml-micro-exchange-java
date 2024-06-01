@@ -44,49 +44,49 @@ class ContentService {
     @Value("#{('${content.default}').split('[,\\s]+')}")
     private String[] contentDefaults;
 
-    public File getContentEntry(final String contentEntryPath) {
+    File getContentEntry(final String contentEntryPath) {
         if (Objects.isNull(contentEntryPath))
             return null;
         return new File(this.contentDirectory, contentEntryPath);
     }
 
-    public String getContentEntryPath(final String contentEntryPath) {
+    String getContentEntryPath(final String contentEntryPath) {
         if (Objects.isNull(contentEntryPath))
             return null;
         return this.getContentEntry(contentEntryPath).toString();
     }
 
-    public File getContentEntry(final HttpServletRequest request) {
+    File getContentEntry(final HttpServletRequest request) {
         if (Objects.isNull(request))
             return null;
         return Paths.get(URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8)).normalize().toFile();
     }
 
-    public String getContentEntryPath(final HttpServletRequest request) {
+    String getContentEntryPath(final HttpServletRequest request) {
         if (Objects.isNull(request))
             return null;
         return this.getContentEntry(request).toString().replace('\\', '/');
     }
 
-    public String getContentDirectoryPath() {
+    String getContentDirectoryPath() {
         return this.contentDirectory.toString();
     }
 
-    public File getContentDirectory(final String contentDirectoryPath) {
+    File getContentDirectory(final String contentDirectoryPath) {
         if (Objects.isNull(contentDirectoryPath))
             return null;
         final File contentEntry = this.getContentEntry(contentDirectoryPath);
         return contentEntry.isDirectory() ? new File(this.contentDirectory, contentDirectoryPath) : null;
     }
 
-    public String getContentDirectoryPath(final String contentDirectoryPath) {
+    String getContentDirectoryPath(final String contentDirectoryPath) {
         final File contentDirectory = this.getContentDirectory(contentDirectoryPath);
         if (Objects.isNull(contentDirectory))
             return null;
         return contentDirectory.toString();
     }
 
-    public File getContentDirectoryDefault(final String contentDirectoryPath) {
+    File getContentDirectoryDefault(final String contentDirectoryPath) {
         final File contentDirectory = this.getContentDirectory(contentDirectoryPath);
         if (Objects.isNull(contentDirectory))
             return null;
