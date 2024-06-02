@@ -65,7 +65,7 @@ class DatasourceFilter extends HttpFilter {
                     && !queryString.isBlank())
                 requestUrl.append("?").append(queryString);
             response.sendRedirect(requestUrl.toString()
-                    .replaceAll("^(?i)(http)(.//)", "$1s$2"));
+                    .replaceAll("^(?i)(http)(://)", "$1s$2"));
             return;
         }
 

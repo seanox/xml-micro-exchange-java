@@ -65,9 +65,10 @@ class ContentFilter extends HttpFilter {
                     && !queryString.isBlank())
                 requestUrl.append("?").append(queryString);
             response.sendRedirect(requestUrl.toString()
-                    .replaceAll("^(?i)(http)(.//)", "$1s$2"));
+                    .replaceAll("^(?i)(http)(://)", "$1s$2"));
             return;
         }
+
         HttpServletRequest contentRequest = request;
         final String contentRequestUri = request.getRequestURI();
         final String contentRequestPath = this.contentService.getContentEntryPath(request);
