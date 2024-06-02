@@ -3,7 +3,7 @@
  * im Folgenden Seanox Software Solutions oder kurz Seanox genannt.
  * Diese Software unterliegt der Version 2 der Apache License.
  *
- * XML Micro Exchange
+ * XMEX XML-Micro-Exchang
  * Copyright (C) 2024 Seanox Software Solutions
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -28,9 +28,12 @@ import org.springframework.stereotype.Service;
 @Service
 class AcmeService {
 
-    @Value("${acme.hash}")
+    @Value("${acme.port:0}")
+    private int acmePort;
+
+    @Value("${acme.hash:}")
     private String acmeHash;
 
-    @Value("${acme.token.uri}")
+    @Value("${acme.token.uri:}")
     private String acmeTokenUri;
 }

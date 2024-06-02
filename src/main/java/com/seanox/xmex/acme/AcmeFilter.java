@@ -3,7 +3,7 @@
  * im Folgenden Seanox Software Solutions oder kurz Seanox genannt.
  * Diese Software unterliegt der Version 2 der Apache License.
  *
- * XML Micro Exchange
+ * XMEX XML-Micro-Exchang
  * Copyright (C) 2024 Seanox Software Solutions
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,9 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 @Order(2)
+@ConditionalOnExpression("('${acme.port:}').matches('^\\d+$')"
+        + " && !('${acme.port:}').matches('^0+$')"
+        + " && ('${server.ssl.enabled}').matches('^(on|true)$')")
 class AcmeFilter extends HttpFilter {
 
     @Autowired
@@ -49,7 +53,7 @@ class AcmeFilter extends HttpFilter {
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws ServletException, IOException {
         final String requestUri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
-        if (request.isSecure()
+        if (!request.isSecure()
                 && requestUri.equals(acmeService.getAcmeTokenUri())) {
             if (HttpMethod.GET.matches(request.getMethod().toUpperCase())) {
                 response.setStatus(HttpServletResponse.SC_OK);
