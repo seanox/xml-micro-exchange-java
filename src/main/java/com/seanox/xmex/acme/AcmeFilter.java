@@ -44,7 +44,7 @@ import java.nio.charset.StandardCharsets;
 @Order(2)
 @ConditionalOnExpression("('${acme.port:}').matches('^\\d+$')"
         + " && !('${acme.port:}').matches('^0+$')"
-        + " && ('${server.ssl.enabled}').matches('^(on|true)$')")
+        + " && ('${server.ssl.enabled:}').matches('^(on|true)$')")
 class AcmeFilter extends HttpFilter {
 
     @Autowired
