@@ -25,8 +25,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -46,8 +50,18 @@ class AcmeFilter extends HttpFilter {
     @Autowired
     private AcmeService acmeService;
 
-    // The ACME challenge works for HTTP requests. If HTTPS is used, the ACME
-    // challenge is ignored. It simply does not make sense.
+    // The ACME HTTP-01 challenge is a support if the application runs via HTTPS
+    // and an Automatic Certificate Management Environment is (ACME) used. Only
+    // then the HTTP connector and the filter for AMCE requests are activated.
+
+    @Bean
+    private WebServerFactoryCustomizer<TomcatServletWebServerFactory> addAcmeHttpConnectorCustomizer() {
+        return (final TomcatServletWebServerFactory factory) -> {
+            final Connector connector = new Connector();
+            connector.setPort(this.acmeService.getAcmePort());
+            factory.addAdditionalTomcatConnectors(connector);
+        };
+    }
 
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)

@@ -24,16 +24,10 @@
 package com.seanox.xmex;
 
 import jakarta.annotation.PostConstruct;
-import org.apache.catalina.connector.Connector;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.TimeZone;
@@ -54,23 +48,5 @@ public class Application extends SpringBootServletInitializer {
     @PostConstruct
     private void configureApplication() {
         TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
-    }
-
-    // The additional HTTP connector is only activated for HTTP-01 challenge if
-    // the application is running with HTTPS and an ACME port has been defined.
-
-    @Value("${acme.port:0}")
-    private int acmePort;
-
-    @Bean
-    @ConditionalOnExpression("('${acme.port:}').matches('^\\d+$')"
-            + " && !('${acme.port:}').matches('^0+$')"
-            + " && ('${server.ssl.enabled}').matches('^(on|true)$')")
-    WebServerFactoryCustomizer<TomcatServletWebServerFactory> addAcmeHttpConnectorCustomizer() {
-        return (final TomcatServletWebServerFactory factory) -> {
-            final Connector connector = new Connector();
-            connector.setPort(this.acmePort);
-            factory.addAdditionalTomcatConnectors(connector);
-        };
     }
 }
