@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +44,9 @@ class ContentFilter extends HttpFilter {
     @Autowired
     private ContentService contentService;
 
+    @Value("#{new Boolean(('${server.ssl.enabled:}').matches('^(on|true)$'))}")
+    private boolean isSecureConnection;
+
     // The filter mainly modifies/manipulates the request URI if it refers to a
     // directory. Then the URL should end with a slash and if there is a default
     // file, its content should be output without a redirect to the default file
@@ -53,6 +57,17 @@ class ContentFilter extends HttpFilter {
             throws ServletException, IOException {
         HttpServletRequest contentRequest = request;
         final String contentRequestUri = request.getRequestURI();
+        if (!request.isSecure()
+                && isSecureConnection) {
+            final StringBuilder requestUrl = new StringBuilder(request.getRequestURL().toString());
+            final String queryString = request.getQueryString();
+            if (Objects.nonNull(queryString)
+                    && !queryString.isBlank())
+                requestUrl.append("?").append(queryString);
+            response.sendRedirect(requestUrl.toString()
+                    .replaceAll("^(?i)(http)(.//)", "$1s$2"));
+            return;
+        }
         final String contentRequestPath = this.contentService.getContentEntryPath(request);
         final File contentRequestEntry = this.contentService.getContentEntry(contentRequestPath);
         if (contentRequestEntry.isDirectory()) {
