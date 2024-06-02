@@ -57,6 +57,7 @@ class ContentFilter extends HttpFilter {
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws ServletException, IOException {
+
         if (!request.isSecure()
                 && isSecureConnection) {
             final StringBuilder requestUrl = new StringBuilder(request.getRequestURL().toString());

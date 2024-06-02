@@ -49,7 +49,7 @@ class AcmeFilterTest_2 {
     private String acmeTokenUri;
 
     @Test
-    void testAcmeHttp_01()
+    void testAcme_01()
             throws Exception {
         final RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .request(HttpMethod.GET, URI.create(this.acmeTokenUri));
@@ -59,7 +59,7 @@ class AcmeFilterTest_2 {
     }
 
     @Test
-    void testAcmeHttp_02()
+    void testAcme_02()
             throws Exception {
         for (final HttpMethod method : new HttpMethod[] {
                 HttpMethod.DELETE,
@@ -78,7 +78,7 @@ class AcmeFilterTest_2 {
     }
 
     @Test
-    void testAcmeHttps_01()
+    void testAcmeSecure_01()
             throws Exception {
         final RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .request(HttpMethod.GET, URI.create(this.acmeTokenUri))
@@ -88,7 +88,7 @@ class AcmeFilterTest_2 {
     }
 
     @Test
-    void testAcmeHttps_02()
+    void testAcmeSecure_02()
             throws Exception {
         final RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .request(HttpMethod.TRACE, URI.create(this.acmeTokenUri))
@@ -98,7 +98,7 @@ class AcmeFilterTest_2 {
     }
 
     @Test
-    void testAcmeHttps_03()
+    void testAcmeSecure_03()
             throws Exception {
         for (final HttpMethod method : new HttpMethod[] {
                 HttpMethod.DELETE,
@@ -115,8 +115,4 @@ class AcmeFilterTest_2 {
                     .andExpect(MockMvcResultMatchers.status().isNotFound());
         }
     }
-
-
-
-
 }

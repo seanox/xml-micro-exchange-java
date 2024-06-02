@@ -44,9 +44,22 @@ class ContentFilterTest {
     @Test
     void testGetDirectory_01()
             throws Exception {
-        for (final String path : new String[] {"/x", "/x/xx", "/x/xx/xxx"}) {
+        for (final String path : new String[] {"/", "/x/", "/x/xx/", "/x/xx/xxx/"}) {
             final RequestBuilder requestBuilder = MockMvcRequestBuilders
                     .request(HttpMethod.GET, URI.create(path));
+            this.mockMvc.perform(requestBuilder)
+                    .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
+                    .andExpect(MockMvcResultMatchers.redirectedUrlPattern("https://**"));
+        }
+    }
+
+    @Test
+    void testGetDirectorySecure_01()
+            throws Exception {
+        for (final String path : new String[] {"/x", "/x/xx", "/x/xx/xxx"}) {
+            final RequestBuilder requestBuilder = MockMvcRequestBuilders
+                    .request(HttpMethod.GET, URI.create(path))
+                    .secure(true);
             this.mockMvc.perform(requestBuilder)
                     .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                     .andExpect(MockMvcResultMatchers.redirectedUrl(path + "/"));
@@ -54,63 +67,69 @@ class ContentFilterTest {
     }
 
     @Test
-    void testGetDirectory_02()
+    void testGetDirectorySecure_02()
             throws Exception {
         for (final String path : new String[] {"/", "/x/", "/x/xx/"}) {
             final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                    .request(HttpMethod.GET, URI.create(path));
+                    .request(HttpMethod.GET, URI.create(path))
+                    .secure(true);
             this.mockMvc.perform(requestBuilder)
                     .andExpect(MockMvcResultMatchers.status().isOk());
         }
     }
 
     @Test
-    void testGetDirectory_03()
+    void testGetDirectorySecure_03()
             throws Exception {
         for (final String path : new String[] {"/x/xx/xxx/"}) {
             final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                    .request(HttpMethod.GET, URI.create(path));
+                    .request(HttpMethod.GET, URI.create(path))
+                    .secure(true);
             this.mockMvc.perform(requestBuilder)
                     .andExpect(MockMvcResultMatchers.status().isNotFound());
         }
     }
 
     @Test
-    void testGetDirectoryDefault_01()
+    void testGetDirectoryDefaultSecure_01()
             throws Exception {
         final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .request(HttpMethod.GET, URI.create("/"));
+                .request(HttpMethod.GET, URI.create("/"))
+                .secure(true);
         this.mockMvc.perform(requestBuilder)
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("index.html"));
     }
 
     @Test
-    void testGetDirectoryDefault_02()
+    void testGetDirectoryDefaultSecure_02()
             throws Exception {
         final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .request(HttpMethod.GET, URI.create("/x/"));
+                .request(HttpMethod.GET, URI.create("/x/"))
+                .secure(true);
         this.mockMvc.perform(requestBuilder)
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("index.htm"));
     }
 
     @Test
-    void testGetDirectoryDefault_03()
+    void testGetDirectoryDefaultSecure_03()
             throws Exception {
         final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .request(HttpMethod.GET, URI.create("/x/xx/"));
+                .request(HttpMethod.GET, URI.create("/x/xx/"))
+                .secure(true);
         this.mockMvc.perform(requestBuilder)
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("index.xhtml"));
     }
 
     @Test
-    void testHeadDirectory_01()
+    void testHeadDirectorySecure_01()
             throws Exception {
         for (final String path : new String[] {"/", "/x/", "/x/xx/"}) {
             final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                    .request(HttpMethod.HEAD, URI.create(path));
+                    .request(HttpMethod.HEAD, URI.create(path))
+                    .secure(true);
             this.mockMvc.perform(requestBuilder)
                     .andExpect(MockMvcResultMatchers.status().isOk())
                     .andExpect(MockMvcResultMatchers.content().string(""));
@@ -118,11 +137,12 @@ class ContentFilterTest {
     }
 
     @Test
-    void testOptionsDirectory_01()
+    void testOptionsDirectorySecure_01()
             throws Exception {
         for (final String path : new String[] {"/", "/x/", "/x/xx/"}) {
             final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                    .request(HttpMethod.OPTIONS, URI.create(path));
+                    .request(HttpMethod.OPTIONS, URI.create(path))
+                    .secure(true);
             this.mockMvc.perform(requestBuilder)
                     .andExpect(MockMvcResultMatchers.status().isOk())
                     .andExpect(MockMvcResultMatchers.content().string(""));
@@ -130,33 +150,36 @@ class ContentFilterTest {
     }
 
     @Test
-    void testPostDirectory_01()
+    void testPostDirectorySecure_01()
             throws Exception {
         for (final String path : new String[] {"/", "/x/", "/x/xx/"}) {
             final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                    .request(HttpMethod.POST, URI.create(path));
+                    .request(HttpMethod.POST, URI.create(path))
+                    .secure(true);
             this.mockMvc.perform(requestBuilder)
                     .andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
         }
     }
 
     @Test
-    void testPutDirectory_01()
+    void testPutDirectorySecure_01()
             throws Exception {
         for (final String path : new String[] {"/", "/x/", "/x/xx/"}) {
             final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                    .request(HttpMethod.PUT, URI.create(path));
+                    .request(HttpMethod.PUT, URI.create(path))
+                    .secure(true);
             this.mockMvc.perform(requestBuilder)
                     .andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
         }
     }
 
     @Test
-    void testDeleteDirectory_01()
+    void testDeleteDirectorySecure_01()
             throws Exception {
         for (final String path : new String[] {"/", "/x/", "/x/xx/"}) {
             final RequestBuilder requestBuilder = MockMvcRequestBuilders
-                    .request(HttpMethod.DELETE, URI.create(path));
+                    .request(HttpMethod.DELETE, URI.create(path))
+                    .secure(true);
             this.mockMvc.perform(requestBuilder)
                     .andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
         }
