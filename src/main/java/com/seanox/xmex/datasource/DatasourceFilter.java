@@ -50,6 +50,13 @@ class DatasourceFilter extends HttpFilter {
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws ServletException, IOException {
+
+        final String requestUri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
+        if (!requestUri.startsWith(this.datasourceService.getServiceUri())) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         if (!request.isSecure()
                 && isSecureConnection) {
             final StringBuilder requestUrl = new StringBuilder(request.getRequestURL().toString());
@@ -59,12 +66,6 @@ class DatasourceFilter extends HttpFilter {
                 requestUrl.append("?").append(queryString);
             response.sendRedirect(requestUrl.toString()
                     .replaceAll("^(?i)(http)(.//)", "$1s$2"));
-            return;
-        }
-
-        final String requestUri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
-        if (!requestUri.startsWith(this.datasourceService.getServiceUri())) {
-            chain.doFilter(request, response);
             return;
         }
 
