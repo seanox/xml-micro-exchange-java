@@ -20,28 +20,19 @@
  */
 package com.seanox.xmex.acme;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpFilter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpMethod;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-
 @Component
-@Order(2)
 @ConditionalOnExpression("('${acme.port:}').matches('^\\d+$')"
         + " && !('${acme.port:}').matches('^0+$')"
         + " && ('${server.ssl.enabled:}').matches('^(on|true)$')")
-class AcmeFilter extends HttpFilter {
+class AcmeConnector {
 
     @Autowired
     private AcmeService acmeService;
@@ -50,20 +41,12 @@ class AcmeFilter extends HttpFilter {
     // and an Automatic Certificate Management Environment is (ACME) used. Only
     // then the HTTP connector and the filter for AMCE requests are activated.
 
-    @Override
-    protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
-            throws ServletException, IOException {
-        final String requestUri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
-        if (!request.isSecure()
-                && requestUri.equals(acmeService.getAcmeTokenUri())) {
-            if (HttpMethod.GET.matches(request.getMethod().toUpperCase())) {
-                response.setStatus(HttpServletResponse.SC_OK);
-                final PrintWriter responseWriter = response.getWriter();
-                responseWriter.write(acmeService.getAcmeHash());
-                responseWriter.flush();
-            } else response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-            return;
-        }
-        chain.doFilter(request, response);
+    @Bean
+    private WebServerFactoryCustomizer<TomcatServletWebServerFactory> addAcmeHttpConnectorCustomizer() {
+        return (final TomcatServletWebServerFactory factory) -> {
+            final Connector connector = new Connector();
+            connector.setPort(this.acmeService.getAcmePort());
+            factory.addAdditionalTomcatConnectors(connector);
+        };
     }
 }
