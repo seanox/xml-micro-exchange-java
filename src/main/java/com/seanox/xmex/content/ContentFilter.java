@@ -52,6 +52,8 @@ class ContentFilter extends HttpFilter {
     // file, its content should be output without a redirect to the default file
     // being sent to the client.
 
+    // If the HTTPS Connector is used, all HTTP requests are redirected to HTTPS.
+
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws ServletException, IOException {
