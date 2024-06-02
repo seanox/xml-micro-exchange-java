@@ -57,8 +57,6 @@ class ContentFilter extends HttpFilter {
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws ServletException, IOException {
-        HttpServletRequest contentRequest = request;
-        final String contentRequestUri = request.getRequestURI();
         if (!request.isSecure()
                 && isSecureConnection) {
             final StringBuilder requestUrl = new StringBuilder(request.getRequestURL().toString());
@@ -70,6 +68,8 @@ class ContentFilter extends HttpFilter {
                     .replaceAll("^(?i)(http)(.//)", "$1s$2"));
             return;
         }
+        HttpServletRequest contentRequest = request;
+        final String contentRequestUri = request.getRequestURI();
         final String contentRequestPath = this.contentService.getContentEntryPath(request);
         final File contentRequestEntry = this.contentService.getContentEntry(contentRequestPath);
         if (contentRequestEntry.isDirectory()) {
