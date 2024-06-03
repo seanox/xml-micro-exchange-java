@@ -18,13 +18,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.seanox.xmex.datasource;
+package com.seanox.xmex.storage;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
@@ -37,10 +39,10 @@ import java.util.Objects;
 
 @Component
 @Order(1)
-class DatasourceFilter extends HttpFilter {
+class StorageFilter extends HttpFilter {
 
     @Autowired
-    private DatasourceService datasourceService;
+    private StorageService storageService;
 
     @Value("#{new Boolean(('${server.ssl.enabled:}').matches('^(on|true)$'))}")
     private boolean isSecureConnection;
@@ -52,7 +54,7 @@ class DatasourceFilter extends HttpFilter {
             throws ServletException, IOException {
 
         final String requestUri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
-        if (!requestUri.startsWith(this.datasourceService.getServiceUri())) {
+        if (!requestUri.startsWith(this.storageService.getServiceUri())) {
             chain.doFilter(request, response);
             return;
         }
@@ -68,7 +70,48 @@ class DatasourceFilter extends HttpFilter {
                     .replaceAll("^(?i)(http)(://)", "$1s$2"));
             return;
         }
+        try {
+            switch (request.getMethod().toUpperCase()) {
+                case "DELETE":
+                    this.doDelete(storage, xpath, request, response);
+                case "GET":
+                    this.doGet(storage, xpath, request, response);
+                case "OPTIONS":
+                    this.doOptions(storage, xpath, request, response);
+                case "PATCH":
+                    this.doPatch(storage, xpath, request, response);
+                case "POST":
+                    this.doPost(storage, xpath, request, response);
+                case "PUT":
+                    this.doPut(storage, xpath, request, response);
+                default:
+                    throw new MethodNotAllowedState(
+                            new HttpHeader("Allow", "OPTIONS, GET, POST, PUT, PATCH, DELETE")
+                    );
+            }
+        } catch (Throwable throwable) {
+        }
+    }
 
-        response.flushBuffer();
+    private abstract static class State extends Error {
+    }
+
+    private static class MethodNotAllowedState extends State {
+
+        final private static int httpStatus = HttpServletResponse.SC_METHOD_NOT_ALLOWED;
+
+        final private HttpHeader[] httpHeaders;
+
+        private MethodNotAllowedState(final HttpHeader... httpHeaders) {
+            this.httpHeaders = httpHeaders;
+        }
+    }
+
+    @AllArgsConstructor(access=AccessLevel.PRIVATE)
+    private static class HttpHeader {
+
+        final private String header;
+
+        final private String value;
     }
 }

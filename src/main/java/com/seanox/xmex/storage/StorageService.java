@@ -18,7 +18,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.seanox.xmex.datasource;
+package com.seanox.xmex.storage;
 
 import jakarta.servlet.http.HttpFilter;
 import lombok.Getter;
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 
 @Getter
 @Service
-class DatasourceService extends HttpFilter {
+class StorageService extends HttpFilter {
 
     @Value("${datasource.directory:./data}")
     private String directory;
