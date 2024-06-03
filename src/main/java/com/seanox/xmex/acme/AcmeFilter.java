@@ -37,7 +37,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
-@Order(2)
+@Order(3)
 @ConditionalOnExpression("('${acme.port:}').matches('^\\d+$')"
         + " && !('${acme.port:}').matches('^0+$')"
         + " && ('${server.ssl.enabled:}').matches('^(on|true)$')")

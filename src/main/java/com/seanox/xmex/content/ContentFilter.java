@@ -27,7 +27,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -38,38 +37,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @Component
-@Order(3)
+@Order(4)
 class ContentFilter extends HttpFilter {
 
     @Autowired
     private ContentService contentService;
-
-    @Value("#{new Boolean(('${server.ssl.enabled:}').matches('^(on|true)$'))}")
-    private boolean isSecureConnection;
 
     // The filter mainly modifies/manipulates the request URI if it refers to a
     // directory. Then the URL should end with a slash and if there is a default
     // file, its content should be output without a redirect to the default file
     // being sent to the client.
 
-    // If the HTTPS Connector is used, all HTTP requests are redirected to HTTPS.
-
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws ServletException, IOException {
-
-        if (!request.isSecure()
-                && isSecureConnection) {
-            final StringBuilder requestUrl = new StringBuilder(request.getRequestURL().toString());
-            final String queryString = request.getQueryString();
-            if (Objects.nonNull(queryString)
-                    && !queryString.isBlank())
-                requestUrl.append("?").append(queryString);
-            response.sendRedirect(requestUrl.toString()
-                    .replaceAll("^(?i)(http)(://)", "$1s$2"));
-            return;
-        }
-
         HttpServletRequest contentRequest = request;
         final String contentRequestUri = request.getRequestURI();
         final String contentRequestPath = this.contentService.getContentEntryPath(request);
