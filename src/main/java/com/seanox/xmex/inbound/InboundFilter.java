@@ -35,8 +35,6 @@ import org.springframework.stereotype.Component;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.UUID;
-
 
 @CommonsLog
 @Component
