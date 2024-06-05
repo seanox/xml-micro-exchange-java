@@ -32,6 +32,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -67,18 +68,31 @@ class InboundFilter extends HttpFilter {
                         .replaceAll("^(?i)(http)(://)", "$1s$2"));
                 return;
             }
+
             chain.doFilter(request, response);
-        } catch (Throwable throwable) {
+
+        } catch (final Throwable throwable) {
+
             final String uniqueTime = Long.toString(Math.abs(System.currentTimeMillis()), 36);
             final String uniqueHash = Long.toString(Math.abs(uniqueTime.hashCode()), 36);
-            final String unique = new StringBuilder()
+            final String uniqueText = new StringBuilder()
                     .append(Long.toString(uniqueHash.length(), 36))
                     .append(uniqueHash)
                     .append(uniqueTime)
                     .toString();
+
             LogFactory.getLog(Application.class)
-                    .error(String.format("Unexpected error occurred: %s", unique), throwable);
-            // TODO: Response modification (500, ...)
+                    .error(String.format("Unexpected error occurred: #%s", uniqueText), throwable);
+
+            if (response.isCommitted())
+                return;
+            response.reset();
+            response.resetBuffer();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setHeader("Error", String.format("#%s", uniqueText));
+            try {response.flushBuffer();
+            } catch (final IOException exception) {
+            }
         }
     }
 }
