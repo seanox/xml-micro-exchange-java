@@ -29,6 +29,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -124,11 +125,20 @@ class StorageFilter extends HttpFilter {
             return;
         }
 
+        final String requestMethod = request.getMethod().toUpperCase();
+
         try {
-            final String storageIdentifier = request.getHeader("Storage");
+
+            // Access-Control headers are received during preflight OPTIONS request
+            if (requestMethod.equals(HttpMethod.OPTIONS)
+                    && Objects.nonNull(request.getHeader(HttpHeader.ORIGIN))
+                    && Objects.isNull(request.getHeader(HttpHeader.STORAGE)))
+                throw new NoContentState();
+
+            final String storageIdentifier = request.getHeader(HttpHeader.STORAGE);
             if (!PATTERN_HEADER_STORAGE.matcher(storageIdentifier).matches())
                 throw new BadRequestState(
-                        new HttpHeader("Message", "Invalid storage identifier"));
+                        new HttpHeader(HttpHeader.MESSAGE, "Invalid storage identifier"));
 
             final StringBuilder xpathBuilder = new StringBuilder();
             xpathBuilder.append(requestUri);
@@ -146,31 +156,31 @@ class StorageFilter extends HttpFilter {
             // optionally to delimit the XML data for the transformation and
             // works also without. In the other cases an empty XPath is replaced
             // by the root slash.
-            final String requestMethod = request.getMethod().toUpperCase();
             if (xpath.isBlank()
-                    && !requestMethod.equals("CONNECT")
-                    && !requestMethod.equals("OPTIONS")
-                    && !requestMethod.equals("POST"))
+                    && !requestMethod.equals(HttpMethod.CONNECT)
+                    && !requestMethod.equals(HttpMethod.OPTIONS)
+                    && !requestMethod.equals(HttpMethod.POST))
                 xpath = "/";
 
             switch (request.getMethod().toUpperCase()) {
-                case "CONNECT":
+                case HttpMethod.CONNECT:
                     this.doConnect(storageIdentifier, xpath, request, response);
-                case "DELETE":
+                case HttpMethod.DELETE:
                     this.doDelete(storageIdentifier, xpath, request, response);
-                case "GET":
+                case HttpMethod.GET:
                     this.doGet(storageIdentifier, xpath, request, response);
-                case "OPTIONS":
+                case HttpMethod.OPTIONS:
                     this.doOptions(storageIdentifier, xpath, request, response);
-                case "PATCH":
+                case HttpMethod.PATCH:
                     this.doPatch(storageIdentifier, xpath, request, response);
-                case "POST":
+                case HttpMethod.POST:
                     this.doPost(storageIdentifier, xpath, request, response);
-                case "PUT":
+                case HttpMethod.PUT:
                     this.doPut(storageIdentifier, xpath, request, response);
                 default:
                     throw new MethodNotAllowedState(
-                            new HttpHeader("Allow", "CONNECT, OPTIONS, GET, POST, PUT, PATCH, DELETE"));
+                            new HttpHeader(HttpHeader.ALLOW,
+                                    String.join(", ", HttpMethod.listAllowedMethods())));
             }
         } catch (final State state) {
             // TODO:
@@ -204,11 +214,37 @@ class StorageFilter extends HttpFilter {
         }
     }
 
+    private static class NoContentState extends AbstractHttpState {
+        private NoContentState(final HttpHeader... httpHeaders) {
+            super(HttpServletResponse.SC_NO_CONTENT, httpHeaders);
+        }
+    }
+
     @AllArgsConstructor(access=AccessLevel.PRIVATE)
     private static class HttpHeader {
+
+        private static final String ORIGIN = HttpHeaders.ORIGIN.toString();
+        private static final String STORAGE = "Storage";
+        private static final String ALLOW = "Allow";
+        private static final String MESSAGE = "Message";
 
         private final String header;
 
         private final String value;
+    }
+
+    private static class HttpMethod {
+
+        private static final String CONNECT = "CONNECT";
+        private static final String OPTIONS = "OPTIONS";
+        private static final String GET = "GET";
+        private static final String POST = "POST";
+        private static final String PUT = "PUT";
+        private static final String PATCH = "PATCH";
+        private static final String DELETE = "DELETE";
+
+        private static final String[] listAllowedMethods() {
+            return new String[] {CONNECT, OPTIONS, GET, POST, PUT, PATCH, DELETE};
+        }
     }
 }
