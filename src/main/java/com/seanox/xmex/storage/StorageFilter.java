@@ -20,6 +20,7 @@
  */
 package com.seanox.xmex.storage;
 
+import com.seanox.xmex.util.Codec;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpFilter;
@@ -35,7 +36,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -61,18 +61,6 @@ class StorageFilter extends HttpFilter {
     private static final Pattern PATTERN_HEADER_STORAGE = Pattern
             .compile("^(\\w{1,64})(?:\\s+(\\w+)){0,1}$");
 
-    private static String decodeHex(final String input) {
-        final char[] inputBuffer = input.toCharArray();
-        final byte[] outputBuffer = new byte[inputBuffer.length /2];
-        for (int inputCursor = 0, outputCursor = 0;
-                inputCursor < inputBuffer.length; inputCursor++) {
-            final int digit = (Character.digit(inputBuffer[inputCursor], 16) << 4)
-                    | Character.digit(inputBuffer[++inputCursor], 16);
-            outputBuffer[outputCursor++] = (byte)(digit & 255);
-        }
-        return new String(outputBuffer);
-    }
-
     private void doConnect(final String storageIdentifier, final String xpath,
                     final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -80,37 +68,37 @@ class StorageFilter extends HttpFilter {
     }
 
     private void doDelete(final String storageIdentifier, final String xpath,
-                           final HttpServletRequest request, final HttpServletResponse response)
+                    final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
         // TODO:
     }
 
     private void doGet(final String storageIdentifier, final String xpath,
-                          final HttpServletRequest request, final HttpServletResponse response)
+                    final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
         // TODO:
     }
 
     private void doOptions(final String storageIdentifier, final String xpath,
-                          final HttpServletRequest request, final HttpServletResponse response)
+                    final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
         // TODO:
     }
 
     private void doPatch(final String storageIdentifier, final String xpath,
-                          final HttpServletRequest request, final HttpServletResponse response)
+                    final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
         // TODO:
     }
 
     private void doPost(final String storageIdentifier, final String xpath,
-                          final HttpServletRequest request, final HttpServletResponse response)
+                    final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
         // TODO:
     }
 
     private void doPut(final String storageIdentifier, final String xpath,
-                          final HttpServletRequest request, final HttpServletResponse response)
+                    final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
         // TODO:
     }
@@ -146,9 +134,9 @@ class StorageFilter extends HttpFilter {
                 xpathBuilder.append("?").append(URLDecoder.decode(request.getQueryString()));
             String xpath = xpathBuilder.substring(this.storageService.getServiceUri().length());
             if (PATTERN_BASE64_STRING.matcher(xpath).matches())
-                xpath = new String(Base64.getDecoder().decode(xpath), StandardCharsets.UTF_8);
+                xpath = Codec.decodeBase64(xpath, StandardCharsets.UTF_8);
             else if (PATTERN_HEX_STRING.matcher(xpath).matches())
-                xpath = StorageFilter.decodeHex(xpath);
+                xpath = Codec.decodeHex(xpath, StandardCharsets.UTF_8);
 
             // Except CONNECT, OPTIONS and POST, all requests expect an XPath or
             // XPath function. CONNECT and OPTIONS do not use an (X)Path to
