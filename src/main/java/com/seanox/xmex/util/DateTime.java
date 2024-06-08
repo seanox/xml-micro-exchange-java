@@ -35,7 +35,7 @@ public class DateTime {
         final Matcher matcher = PATTERN_DURATION.matcher(input.toLowerCase());
         if (!matcher.find())
             throw new IllegalArgumentException("Invalid input, duration is expected");
-        final double time = Double.valueOf(matcher.group(1));
+        final double time = Double.parseDouble(matcher.group(1));
         final String unit = matcher.group(2);
         int factor = 1;
         if (unit.equals("s"))
