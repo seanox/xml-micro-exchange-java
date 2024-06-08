@@ -80,4 +80,48 @@ class CodecTest {
                 IllegalArgumentException.class,
                 () -> Codec.decodeHex("5365616E6F7820536F66747761726520536f6c7574696f6e73 "));
     }
+
+    @Test
+    void testDecodeBase64_1() {
+        Assertions.assertNull(Codec.decodeBase64(null));
+    }
+
+    @Test
+    void testDecodeBase64_2() {
+        Assertions.assertEquals("", Codec.decodeBase64(""));
+    }
+
+    @Test
+    void testDecodeBase64_3() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> Codec.decodeBase64(" "));
+    }
+
+    @Test
+    void testDecodeBase64_4() {
+        Assertions.assertEquals("Seanox Software Solutions",
+                Codec.decodeBase64("U2Vhbm94IFNvZnR3YXJlIFNvbHV0aW9ucw=="));
+    }
+
+    @Test
+    void testDecodeBase64_5() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> Codec.decodeBase64(" U2Vhbm94IFNvZnR3YXJlIFNvbHV0aW9ucw=="));
+    }
+
+    @Test
+    void testDecodeBase64_6() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> Codec.decodeBase64(" U2Vhbm94IFNvZnR3YXJlIFNvbHV0aW9ucw== "));
+    }
+
+    @Test
+    void testDecodeBase64_7() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> Codec.decodeBase64("U2Vhbm94IFNvZnR3YXJlIFNvbHV0aW9ucw== "));
+    }
 }
