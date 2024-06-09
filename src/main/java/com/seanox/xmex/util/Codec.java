@@ -34,20 +34,19 @@ public class Codec {
             .compile("^([A-Fa-f0-9]{2})+$");
 
     public static String decodeHex(final String input) {
-        if (Objects.isNull(input)
-                || !PATTERN_HEX.matcher(input).matches())
-            throw new IllegalArgumentException("Invalid input, hexadecimal encoding is expected");
         return Codec.decodeHex(input, Charset.defaultCharset());
     }
 
     public static String decodeHex(final String input, final Charset charset) {
         if (Objects.isNull(input)
-                || !PATTERN_HEX.matcher(input).matches())
+                || input.isEmpty())
+            return input;
+        if (!PATTERN_HEX.matcher(input).matches())
             throw new IllegalArgumentException("Invalid input, hexadecimal encoding is expected");
         final char[] inputBuffer = input.toCharArray();
         final byte[] outputBuffer = new byte[inputBuffer.length /2];
         for (int inputCursor = 0, outputCursor = 0;
-             inputCursor < inputBuffer.length; inputCursor++) {
+            inputCursor < inputBuffer.length; inputCursor++) {
             final int digit = (Character.digit(inputBuffer[inputCursor], 16) << 4)
                     | Character.digit(inputBuffer[++inputCursor], 16);
             outputBuffer[outputCursor++] = (byte)(digit & 255);
@@ -56,15 +55,14 @@ public class Codec {
     }
 
     public static String decodeBase64(final String input) {
-        if (Objects.isNull(input)
-                || !PATTERN_HEX.matcher(input).matches())
-            throw new IllegalArgumentException("Invalid input, Base64 encoding is expected");
         return Codec.decodeBase64(input, Charset.defaultCharset());
     }
 
     public static String decodeBase64(final String input, final Charset charset) {
         if (Objects.isNull(input)
-                || !PATTERN_HEX.matcher(input).matches())
+                || input.isEmpty())
+            return input;
+        if (!PATTERN_BASE64.matcher(input).matches())
             throw new IllegalArgumentException("Invalid input, Base64 encoding is expected");
         return new String(Base64.getDecoder().decode(input), charset);
     }

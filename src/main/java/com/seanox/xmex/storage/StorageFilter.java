@@ -46,12 +46,6 @@ class StorageFilter extends HttpFilter {
     @Autowired
     private StorageService storageService;
 
-    private static final Pattern PATTERN_BASE64_STRING = Pattern
-            .compile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
-
-    private static final Pattern PATTERN_HEX_STRING = Pattern
-            .compile("^([A-Fa-f0-9]{2})+$");
-
     /**
      * Pattern for the Storage header
      *     Group 0. Full match
@@ -133,9 +127,9 @@ class StorageFilter extends HttpFilter {
             if (Objects.nonNull(request.getQueryString()))
                 xpathBuilder.append("?").append(URLDecoder.decode(request.getQueryString()));
             String xpath = xpathBuilder.substring(this.storageService.getServiceUri().length());
-            if (PATTERN_BASE64_STRING.matcher(xpath).matches())
+            if (Codec.PATTERN_BASE64.matcher(xpath).matches())
                 xpath = Codec.decodeBase64(xpath, StandardCharsets.UTF_8);
-            else if (PATTERN_HEX_STRING.matcher(xpath).matches())
+            else if (Codec.PATTERN_HEX.matcher(xpath).matches())
                 xpath = Codec.decodeHex(xpath, StandardCharsets.UTF_8);
 
             // Except CONNECT, OPTIONS and POST, all requests expect an XPath or
