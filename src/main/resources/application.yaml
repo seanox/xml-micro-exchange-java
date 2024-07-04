@@ -8,6 +8,10 @@ server:
     key-store-password: ${XMEX_SERVER_SSL_KEY_STORE_PASSWORD:changeIt}
   tomcat:
     max-keep-alive-requests: ${XMEX_SERVER_MAX_KEEP_ALIVE_REQUESTS:25}
+    accesslog:
+      enabled: ${XMEX_SERVER_ACCESS_LOG:off}
+      pattern: ${XMEX_SERVER_ACCESS_LOG_PATTERN:common}
+      directory: ${XMEX_SERVER_ACCESS_LOG_DIRECTORY:}
 
 storage:
   uri: ${XMEX_STORAGE_URI:/xmex!}
@@ -25,8 +29,3 @@ acme:
 content:
   directory: ${XMEX_CONTENT_DIRECTORY:./content}
   default: ${XMEX_CONTENT_DEFAULT:index.htm index.html index.xhtml}
-
-logging:
-  output: ${XMEX_LOGGIN_OUTPUT:}
-  error: ${XMEX_LOGGIN_ERROR:}
-  access: ${XMEX_LOGGIN_ACCESS:off}
