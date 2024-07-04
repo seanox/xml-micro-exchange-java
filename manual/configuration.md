@@ -12,8 +12,19 @@ TODO:
 ### Application
 
 For logging, the __stdout__ is used. Configuration via an environment variable
-is not provided. To redirect and forward application logging, the pipe and
-commands such as _tee_ should therefore be used.
+is not provided. To redirect and forward application logs, the start of the
+program should be combined with _pipes_ and commands such as _tee_. 
+
+```
+java -jar seanox-xmex-0.0.0.0.jar | tee -a logfile.log
+
+```
+
+Or with more dynamics in the file name:
+
+```
+java -jar seanox-xmex-0.0.0.0.jar | tee -a logfile_$(date '+%Y%m%d').log
+```
 
 ### Access Log
 
@@ -21,7 +32,7 @@ commands such as _tee_ should therefore be used.
   <thead>
     <tr>
       <th>Environment Variable</th>
-      <th>application.property</th>
+      <th>application.properties</th>
       <th>Description</th>
     </tr>  
   </thead>
