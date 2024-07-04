@@ -9,17 +9,24 @@ server:
   tomcat:
     max-keep-alive-requests: ${XMEX_SERVER_MAX_KEEP_ALIVE_REQUESTS:25}
 
+storage:
+  uri: ${XMEX_STORAGE_URI:/xmex!}
+  directory: ${XMEX_STORAGE_DIRECTORY:./data}
+  space: ${XMEX_STORAGE_SPACE:256K}
+  quantity: ${XMEX_STORAGE_QUANTITY:65535}
+  expiration: ${XMEX_STORAGE_EXPIRATION:900s}
+
 acme:
   port: ${XMEX_ACME_PORT:80}
   hash: ${XMEX_ACME_HASH:}
   token:
     uri: ${XMEX_ACME_TOKEN_URI:}
 
-datasource:
-  directory: ${XMEX_DATASOURCE_DIRECTORY:./data}
-  service:
-    uri: ${XMEX_datasource_SERVICE_URI:/xmex!}
-
 content:
   directory: ${XMEX_CONTENT_DIRECTORY:./content}
   default: ${XMEX_CONTENT_DEFAULT:index.htm index.html index.xhtml}
+
+logging:
+  output: ${XMEX_LOGGIN_OUTPUT:}
+  error: ${XMEX_LOGGIN_ERROR:}
+  access: ${XMEX_LOGGIN_ACCESS:off}
