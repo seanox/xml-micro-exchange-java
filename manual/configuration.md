@@ -32,7 +32,7 @@ java -jar seanox-xmex-0.0.0.0.jar | tee -a logfile_$(date '+%Y%m%d').log
   <thead>
     <tr>
       <th>Environment Variable</th>
-      <th>application.properties</th>
+      <th>Target in application.properties</th>
       <th>Description</th>
     </tr>  
   </thead>
