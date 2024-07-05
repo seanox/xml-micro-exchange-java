@@ -18,7 +18,7 @@ program should be combined with _pipes_ and commands such as _tee_.
 Simple redirect:
 
 ```
-java -jar seanox-xmex-0.0.0.0.jar > logfile.log
+java -jar seanox-xmex-0.0.0.0.jar >> logfile.log
 ```
 
 Simple forwarding:
@@ -34,6 +34,10 @@ java -jar seanox-xmex-0.0.0.0.jar | tee -a logfile_$(date '+%Y%m%d').log
 ```
 
 ### Access Log
+
+By default, the access log is deactivated and must be consciously activated.
+
+TODO:
 
 <table>
   <thead>
@@ -76,8 +80,7 @@ java -jar seanox-xmex-0.0.0.0.jar | tee -a logfile_$(date '+%Y%m%d').log
       </td>
       <td>
         TODO:
-        Be careful with relative paths, as these could start in the temp/tmp
-        directory of the user. It is better if an absolute path is specified. 
+        Relative paths are based on the current working directory.
       </td>
     </tr>
   </tbody>
