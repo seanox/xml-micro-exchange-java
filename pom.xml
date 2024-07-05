@@ -12,7 +12,8 @@
 
   <groupId>com.seanox</groupId>
   <artifactId>seanox-xmex</artifactId>
-  <version>0.0.0</version>
+  <version>0.0.0.0</version>
+
   <packaging>jar</packaging>
   <name>xmex</name>
   <description>
@@ -56,20 +57,38 @@
       </activation>
     </profile>
     <profile>
-      <id>test-1</id>
+      <id>test-ssl-1</id>
       <activation>
         <property>
           <name>spring.profiles.active</name>
-          <value>test-1</value>
+          <value>test-ssl-1</value>
         </property>
       </activation>
     </profile>
     <profile>
-      <id>test-2</id>
+      <id>test-ssl-2</id>
       <activation>
         <property>
           <name>spring.profiles.active</name>
-          <value>test-2</value>
+          <value>test-ssl-2</value>
+        </property>
+      </activation>
+    </profile>
+    <profile>
+      <id>test-accesslog-1</id>
+      <activation>
+        <property>
+          <name>spring.profiles.active</name>
+          <value>test-accesslog-1</value>
+        </property>
+      </activation>
+    </profile>
+    <profile>
+      <id>test-accesslog-2</id>
+      <activation>
+        <property>
+          <name>spring.profiles.active</name>
+          <value>test-accesslog-2</value>
         </property>
       </activation>
     </profile>
@@ -192,7 +211,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.6.3</version>
+        <version>3.7.0</version>
         <configuration>
           <source>${java.version}</source>
           <doclint>none</doclint>
@@ -256,31 +275,4 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-        <configuration>
-          <xmlOutput>true</xmlOutput>
-          <xmlOutputDirectory>target/site</xmlOutputDirectory>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <configuration>
-          <targetJdk>${java.version}</targetJdk>
-          <inputEncoding>${encoding}</inputEncoding>
-          <minimumTokens>100</minimumTokens>
-          <linkXRef>false</linkXRef>
-        </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
 </project>

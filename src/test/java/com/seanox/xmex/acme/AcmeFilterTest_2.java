@@ -36,7 +36,7 @@ import java.net.URI;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles({"test-2"})
+@ActiveProfiles({"test-ssl-2"})
 class AcmeFilterTest_2 {
 
     @Autowired

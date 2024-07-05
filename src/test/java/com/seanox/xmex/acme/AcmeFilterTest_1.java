@@ -36,7 +36,7 @@ import java.net.URI;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles({"test-1"})
+@ActiveProfiles({"test-ssl-1"})
 class AcmeFilterTest_1 {
 
     @Autowired
@@ -81,8 +81,8 @@ class AcmeFilterTest_1 {
     // Normally the ACME requests via HTTPS are ignored and responded with 404,
     // because the AcmeFilter ignores the requests and passes them on to the
     // ContentFilter, which does not know the ACME URI. This is different in
-    // profile test-1, as the ACME URI has been entered as content. It makes no
-    // sense, but it is a theoretical test that the AcmeFilter takes effect
+    // profile test-ssl-1, as the ACME URI has been entered as content. It makes
+    // no sense, but it is a theoretical test that the AcmeFilter takes effect
     // before the ContentFilter.
 
     @Test
