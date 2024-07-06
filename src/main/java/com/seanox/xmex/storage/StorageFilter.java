@@ -55,44 +55,44 @@ class StorageFilter extends HttpFilter {
     private static final Pattern PATTERN_HEADER_STORAGE = Pattern
             .compile("^(\\w{1,64})(?:\\s+(\\w+)){0,1}$");
 
-    private void doConnect(final String storageIdentifier, final String xpath,
-                    final HttpServletRequest request, final HttpServletResponse response)
+    private void doConnect(final HttpServletRequest request, final HttpServletResponse response,
+                    final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
         // TODO:
     }
 
-    private void doDelete(final String storageIdentifier, final String xpath,
-                    final HttpServletRequest request, final HttpServletResponse response)
+    private void doDelete(final HttpServletRequest request, final HttpServletResponse response,
+                    final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
         // TODO:
     }
 
-    private void doGet(final String storageIdentifier, final String xpath,
-                    final HttpServletRequest request, final HttpServletResponse response)
+    private void doGet(final HttpServletRequest request, final HttpServletResponse response,
+                    final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
         // TODO:
     }
 
-    private void doOptions(final String storageIdentifier, final String xpath,
-                    final HttpServletRequest request, final HttpServletResponse response)
+    private void doOptions(final HttpServletRequest request, final HttpServletResponse response,
+                    final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
         // TODO:
     }
 
-    private void doPatch(final String storageIdentifier, final String xpath,
-                    final HttpServletRequest request, final HttpServletResponse response)
+    private void doPatch(final HttpServletRequest request, final HttpServletResponse response,
+                    final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
         // TODO:
     }
 
-    private void doPost(final String storageIdentifier, final String xpath,
-                    final HttpServletRequest request, final HttpServletResponse response)
+    private void doPost(final HttpServletRequest request, final HttpServletResponse response,
+                    final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
         // TODO:
     }
 
-    private void doPut(final String storageIdentifier, final String xpath,
-                    final HttpServletRequest request, final HttpServletResponse response)
+    private void doPut(final HttpServletRequest request, final HttpServletResponse response,
+                    final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
         // TODO:
     }
@@ -118,6 +118,9 @@ class StorageFilter extends HttpFilter {
                 throw new NoContentState();
 
             final String storageIdentifier = request.getHeader(HttpHeader.STORAGE);
+            if (Objects.isNull(storageIdentifier))
+                throw new BadRequestState(
+                        new HttpHeader(HttpHeader.MESSAGE, "Missing storage identifier"));
             if (!PATTERN_HEADER_STORAGE.matcher(storageIdentifier).matches())
                 throw new BadRequestState(
                         new HttpHeader(HttpHeader.MESSAGE, "Invalid storage identifier"));
@@ -146,19 +149,19 @@ class StorageFilter extends HttpFilter {
 
             switch (request.getMethod().toUpperCase()) {
                 case HttpMethod.CONNECT:
-                    this.doConnect(storageIdentifier, xpath, request, response);
+                    this.doConnect(request, response, storageIdentifier, xpath);
                 case HttpMethod.DELETE:
-                    this.doDelete(storageIdentifier, xpath, request, response);
+                    this.doDelete(request, response, storageIdentifier, xpath);
                 case HttpMethod.GET:
-                    this.doGet(storageIdentifier, xpath, request, response);
+                    this.doGet(request, response, storageIdentifier, xpath);
                 case HttpMethod.OPTIONS:
-                    this.doOptions(storageIdentifier, xpath, request, response);
+                    this.doOptions(request, response, storageIdentifier, xpath);
                 case HttpMethod.PATCH:
-                    this.doPatch(storageIdentifier, xpath, request, response);
+                    this.doPatch(request, response, storageIdentifier, xpath);
                 case HttpMethod.POST:
-                    this.doPost(storageIdentifier, xpath, request, response);
+                    this.doPost(request, response, storageIdentifier, xpath);
                 case HttpMethod.PUT:
-                    this.doPut(storageIdentifier, xpath, request, response);
+                    this.doPut(request, response, storageIdentifier, xpath);
                 default:
                     throw new MethodNotAllowedState(
                             new HttpHeader(HttpHeader.ALLOW,

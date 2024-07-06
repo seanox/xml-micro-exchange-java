@@ -72,6 +72,10 @@ public class Application extends SpringBootServletInitializer {
         // org.springframework.boot.autoconfigure.web.embedded.TomcatWebServerFactoryCustomizer
         //     private void customizeAccessLog(ConfigurableTomcatWebServerFactory factory)
 
+        // Especially for Windows, the isAbsolute method must be used for paths,
+        // which recognizes the drive letters and whether the path begins with a
+        // (back)slash, where the isAbsolute method otherwise returns false.
+
         @Override
         public void customize(final ConfigurableTomcatWebServerFactory factory) {
             final ServerProperties.Tomcat serverProperties = this.serverProperties.getTomcat();
@@ -81,7 +85,8 @@ public class Application extends SpringBootServletInitializer {
             if (Objects.isNull(accessLogConfig)
                     || !accessLogConfig.isEnabled()
                     || Objects.isNull(accessLogConfig.getDirectory())
-                    || new File(accessLogConfig.getDirectory()).isAbsolute())
+                    || new File(accessLogConfig.getDirectory()).isAbsolute()
+                    || accessLogConfig.getDirectory().matches("^\\s*[\\/].*") )
                 return;
             final File accessLogDirectory = new File(".", accessLogConfig.getDirectory()).getAbsoluteFile();
             accessLogConfig.setDirectory(accessLogDirectory.toString());

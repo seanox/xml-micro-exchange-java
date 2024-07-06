@@ -35,7 +35,7 @@ import java.net.URI;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles({"test-1"})
+@ActiveProfiles({"test-ssl-1"})
 class ContentFilterTest {
 
     @Autowired

@@ -80,7 +80,8 @@ TODO:
       </td>
       <td>
         TODO:
-        Relative paths are based on the current working directory.
+        Relative paths are based on the current working directory. If no path is
+        specified, the current working directory is used for data output.
       </td>
     </tr>
   </tbody>
