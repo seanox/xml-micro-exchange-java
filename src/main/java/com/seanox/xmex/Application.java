@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.web.embedded.tomcat.ConfigurableTomcatWebServerFactory;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Configuration;
@@ -62,11 +63,11 @@ public class Application extends SpringBootServletInitializer {
         @Autowired
         private ServerProperties serverProperties;
 
-        // If the log directory (server.tomcat.accesslog.directory) is a relative
-        // path, it should be based on the current working directory. By default,
-        // the embedded Tomcat may be executed below the temp directory of the user
-        // and the log directory, if it is a relative path, is based on this
-        // directory.
+        // If the log directory (server.tomcat.accesslog.directory) is a
+        // relative path, it should be based on the current working directory.
+        // By default, the embedded Tomcat may be executed below the temp
+        // directory of the user and the log directory, if it is a relative
+        // path, is based on this directory.
 
         // Implementation is based on:
         // org.springframework.boot.autoconfigure.web.embedded.TomcatWebServerFactoryCustomizer
@@ -90,25 +91,34 @@ public class Application extends SpringBootServletInitializer {
                 return;
             final File accessLogDirectory = new File(".", accessLogConfig.getDirectory()).getAbsoluteFile();
             accessLogConfig.setDirectory(accessLogDirectory.toString());
-            final AccessLogValve valve = new AccessLogValve();
+            final AccessLogValve accessLogValve = new AccessLogValve();
             final PropertyMapper propertyMapper = PropertyMapper.get();
-            propertyMapper.from(accessLogConfig.getConditionIf()).to(valve::setConditionIf);
-            propertyMapper.from(accessLogConfig.getConditionUnless()).to(valve::setConditionUnless);
-            propertyMapper.from(accessLogConfig.getPattern()).to(valve::setPattern);
-            propertyMapper.from(accessLogConfig.getDirectory()).to(valve::setDirectory);
-            propertyMapper.from(accessLogConfig.getPrefix()).to(valve::setPrefix);
-            propertyMapper.from(accessLogConfig.getSuffix()).to(valve::setSuffix);
-            propertyMapper.from(accessLogConfig.getEncoding()).whenHasText().to(valve::setEncoding);
-            propertyMapper.from(accessLogConfig.getLocale()).whenHasText().to(valve::setLocale);
-            propertyMapper.from(accessLogConfig.isCheckExists()).to(valve::setCheckExists);
-            propertyMapper.from(accessLogConfig.isRotate()).to(valve::setRotatable);
-            propertyMapper.from(accessLogConfig.isRenameOnRotate()).to(valve::setRenameOnRotate);
-            propertyMapper.from(accessLogConfig.getMaxDays()).to(valve::setMaxDays);
-            propertyMapper.from(accessLogConfig.getFileDateFormat()).to(valve::setFileDateFormat);
-            propertyMapper.from(accessLogConfig.isIpv6Canonical()).to(valve::setIpv6Canonical);
-            propertyMapper.from(accessLogConfig.isRequestAttributesEnabled()).to(valve::setRequestAttributesEnabled);
-            propertyMapper.from(accessLogConfig.isBuffered()).to(valve::setBuffered);
-            factory.addEngineValves(valve);
+            propertyMapper.from(accessLogConfig.getConditionIf()).to(accessLogValve::setConditionIf);
+            propertyMapper.from(accessLogConfig.getConditionUnless()).to(accessLogValve::setConditionUnless);
+            propertyMapper.from(accessLogConfig.getPattern()).to(accessLogValve::setPattern);
+            propertyMapper.from(accessLogConfig.getDirectory()).to(accessLogValve::setDirectory);
+            propertyMapper.from(accessLogConfig.getPrefix()).to(accessLogValve::setPrefix);
+            propertyMapper.from(accessLogConfig.getSuffix()).to(accessLogValve::setSuffix);
+            propertyMapper.from(accessLogConfig.getEncoding()).whenHasText().to(accessLogValve::setEncoding);
+            propertyMapper.from(accessLogConfig.getLocale()).whenHasText().to(accessLogValve::setLocale);
+            propertyMapper.from(accessLogConfig.isCheckExists()).to(accessLogValve::setCheckExists);
+            propertyMapper.from(accessLogConfig.isRotate()).to(accessLogValve::setRotatable);
+            propertyMapper.from(accessLogConfig.isRenameOnRotate()).to(accessLogValve::setRenameOnRotate);
+            propertyMapper.from(accessLogConfig.getMaxDays()).to(accessLogValve::setMaxDays);
+            propertyMapper.from(accessLogConfig.getFileDateFormat()).to(accessLogValve::setFileDateFormat);
+            propertyMapper.from(accessLogConfig.isIpv6Canonical()).to(accessLogValve::setIpv6Canonical);
+            propertyMapper.from(accessLogConfig.isRequestAttributesEnabled()).to(accessLogValve::setRequestAttributesEnabled);
+            propertyMapper.from(accessLogConfig.isBuffered()).to(accessLogValve::setBuffered);
+            final AccessLogValve engineAccessLogValve = (AccessLogValve)((TomcatServletWebServerFactory)factory)
+                    .getEngineValves()
+                    .stream()
+                    .filter(valve -> valve instanceof AccessLogValve)
+                    .findFirst()
+                    .get();
+            if (Objects.nonNull(engineAccessLogValve)) {
+                engineAccessLogValve.setDirectory(accessLogDirectory.toString());
+                engineAccessLogValve.setPattern(accessLogConfig.getPattern());
+            } else factory.addEngineValves(accessLogValve);
         }
     }
 }
