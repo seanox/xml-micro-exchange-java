@@ -27,13 +27,13 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.web.embedded.tomcat.ConfigurableTomcatWebServerFactory;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.util.Objects;
@@ -73,6 +73,8 @@ public class Application extends SpringBootServletInitializer {
         // org.springframework.boot.autoconfigure.web.embedded.TomcatWebServerFactoryCustomizer
         //     private void customizeAccessLog(ConfigurableTomcatWebServerFactory factory)
 
+        // Only the existing AccessLogValve is modified, but no new one is added.
+
         // Especially for Windows, the isAbsolute method must be used for paths,
         // which recognizes the drive letters and whether the path begins with a
         // (back)slash, where the isAbsolute method otherwise returns false.
@@ -80,45 +82,20 @@ public class Application extends SpringBootServletInitializer {
         @Override
         public void customize(final ConfigurableTomcatWebServerFactory factory) {
             final ServerProperties.Tomcat serverProperties = this.serverProperties.getTomcat();
-            if (Objects.isNull(serverProperties))
+            final ServerProperties.Tomcat.Accesslog accessLog = serverProperties.getAccesslog();
+            if ((StringUtils.hasText(accessLog.getDirectory())
+                        && accessLog.getDirectory().matches("^\\s*[\\/].*"))
+                    || new File(accessLog.getDirectory()).isAbsolute())
                 return;
-            final ServerProperties.Tomcat.Accesslog accessLogConfig = serverProperties.getAccesslog();
-            if (Objects.isNull(accessLogConfig)
-                    || !accessLogConfig.isEnabled()
-                    || Objects.isNull(accessLogConfig.getDirectory())
-                    || new File(accessLogConfig.getDirectory()).isAbsolute()
-                    || accessLogConfig.getDirectory().matches("^\\s*[\\/].*") )
-                return;
-            final File accessLogDirectory = new File(".", accessLogConfig.getDirectory()).getAbsoluteFile();
-            accessLogConfig.setDirectory(accessLogDirectory.toString());
-            final AccessLogValve accessLogValve = new AccessLogValve();
-            final PropertyMapper propertyMapper = PropertyMapper.get();
-            propertyMapper.from(accessLogConfig.getConditionIf()).to(accessLogValve::setConditionIf);
-            propertyMapper.from(accessLogConfig.getConditionUnless()).to(accessLogValve::setConditionUnless);
-            propertyMapper.from(accessLogConfig.getPattern()).to(accessLogValve::setPattern);
-            propertyMapper.from(accessLogConfig.getDirectory()).to(accessLogValve::setDirectory);
-            propertyMapper.from(accessLogConfig.getPrefix()).to(accessLogValve::setPrefix);
-            propertyMapper.from(accessLogConfig.getSuffix()).to(accessLogValve::setSuffix);
-            propertyMapper.from(accessLogConfig.getEncoding()).whenHasText().to(accessLogValve::setEncoding);
-            propertyMapper.from(accessLogConfig.getLocale()).whenHasText().to(accessLogValve::setLocale);
-            propertyMapper.from(accessLogConfig.isCheckExists()).to(accessLogValve::setCheckExists);
-            propertyMapper.from(accessLogConfig.isRotate()).to(accessLogValve::setRotatable);
-            propertyMapper.from(accessLogConfig.isRenameOnRotate()).to(accessLogValve::setRenameOnRotate);
-            propertyMapper.from(accessLogConfig.getMaxDays()).to(accessLogValve::setMaxDays);
-            propertyMapper.from(accessLogConfig.getFileDateFormat()).to(accessLogValve::setFileDateFormat);
-            propertyMapper.from(accessLogConfig.isIpv6Canonical()).to(accessLogValve::setIpv6Canonical);
-            propertyMapper.from(accessLogConfig.isRequestAttributesEnabled()).to(accessLogValve::setRequestAttributesEnabled);
-            propertyMapper.from(accessLogConfig.isBuffered()).to(accessLogValve::setBuffered);
-            final AccessLogValve engineAccessLogValve = (AccessLogValve)((TomcatServletWebServerFactory)factory)
+            final File accessLogDirectory = new File(".", accessLog.getDirectory()).getAbsoluteFile();
+            final AccessLogValve valve = (AccessLogValve)((TomcatServletWebServerFactory)factory)
                     .getEngineValves()
                     .stream()
-                    .filter(valve -> valve instanceof AccessLogValve)
+                    .filter(engineValve -> engineValve instanceof AccessLogValve)
                     .findFirst()
                     .get();
-            if (Objects.nonNull(engineAccessLogValve)) {
-                engineAccessLogValve.setDirectory(accessLogDirectory.toString());
-                engineAccessLogValve.setPattern(accessLogConfig.getPattern());
-            } else factory.addEngineValves(accessLogValve);
+            if (Objects.nonNull(valve))
+                valve.setDirectory(accessLogDirectory.toString());
         }
     }
 }
