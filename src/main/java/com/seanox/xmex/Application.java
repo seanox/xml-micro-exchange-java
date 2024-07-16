@@ -36,7 +36,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
-import java.util.Objects;
 import java.util.TimeZone;
 
 @Configuration
@@ -88,14 +87,11 @@ public class Application extends SpringBootServletInitializer {
                     || new File(accessLog.getDirectory()).isAbsolute())
                 return;
             final File accessLogDirectory = new File(".", accessLog.getDirectory()).getAbsoluteFile();
-            final AccessLogValve valve = (AccessLogValve)((TomcatServletWebServerFactory)factory)
-                    .getEngineValves()
-                    .stream()
+            ((TomcatServletWebServerFactory)factory).getEngineValves().stream()
                     .filter(engineValve -> engineValve instanceof AccessLogValve)
                     .findFirst()
-                    .get();
-            if (Objects.nonNull(valve))
-                valve.setDirectory(accessLogDirectory.toString());
+                    .ifPresent(value ->
+                            ((AccessLogValve) value).setDirectory(accessLogDirectory.toString()));
         }
     }
 }

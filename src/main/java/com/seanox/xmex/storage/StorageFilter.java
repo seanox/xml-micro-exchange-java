@@ -35,6 +35,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -128,7 +129,7 @@ class StorageFilter extends HttpFilter {
             final StringBuilder xpathBuilder = new StringBuilder();
             xpathBuilder.append(requestUri);
             if (Objects.nonNull(request.getQueryString()))
-                xpathBuilder.append("?").append(URLDecoder.decode(request.getQueryString()));
+                xpathBuilder.append("?").append(URLDecoder.decode(request.getQueryString(), Charset.defaultCharset()));
             String xpath = xpathBuilder.substring(this.storageService.getServiceUri().length());
             if (Codec.PATTERN_BASE64.matcher(xpath).matches())
                 xpath = Codec.decodeBase64(xpath, StandardCharsets.UTF_8);
@@ -208,7 +209,7 @@ class StorageFilter extends HttpFilter {
     @AllArgsConstructor(access=AccessLevel.PRIVATE)
     private static class HttpHeader {
 
-        private static final String ORIGIN = HttpHeaders.ORIGIN.toString();
+        private static final String ORIGIN = HttpHeaders.ORIGIN;
         private static final String STORAGE = "Storage";
         private static final String ALLOW = "Allow";
         private static final String MESSAGE = "Message";
@@ -228,7 +229,7 @@ class StorageFilter extends HttpFilter {
         private static final String PATCH = "PATCH";
         private static final String DELETE = "DELETE";
 
-        private static final String[] listAllowedMethods() {
+        private static String[] listAllowedMethods() {
             return new String[] {CONNECT, OPTIONS, GET, POST, PUT, PATCH, DELETE};
         }
     }
