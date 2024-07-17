@@ -23,7 +23,7 @@ package com.seanox.xmex.util;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class NumberTest {
+class NumberTest {
 
     @Test
     void testparseLong_1() {
