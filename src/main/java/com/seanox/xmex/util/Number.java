@@ -24,26 +24,21 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DateTime {
+public class Number {
 
-    private static final Pattern PATTERN_DURATION = Pattern
-            .compile("^(?i)([\\d\\.\\,]+)\\s*(ms|s|m|h)$");
+    private static final Pattern PATTERN_NUMBER = Pattern
+            .compile("(?i)^((?:-){0,1}\\d+)(?:\\s*([kmgtpe])(i){0,1}){0,1}$");
 
-    public long parseDuration(final String input) {
-        if (Objects.isNull(input))
-            throw new IllegalArgumentException("Invalid input, duration is expected");
-        final Matcher matcher = PATTERN_DURATION.matcher(input.toLowerCase());
+    public static long parseLong(final String text) {
+        if (Objects.isNull(text))
+            throw new NumberFormatException("Cannot parse null string");
+        final Matcher matcher = PATTERN_NUMBER.matcher(text);
         if (!matcher.find())
-            throw new IllegalArgumentException("Invalid input, duration is expected");
-        final double time = Double.parseDouble(matcher.group(1));
-        final String unit = matcher.group(2);
-        int factor = 1;
-        if (unit.equals("s"))
-            factor *= 1000;
-        else if (unit.equals("m"))
-            factor *= 1000 *60;
-        else if (unit.equals("h"))
-            factor *= 1000 *60 *60;
-        return Math.round(time *factor);
+            throw new NumberFormatException(String.format("For input string: %s", text));
+        final int base = Objects.nonNull(matcher.group(3))
+                && matcher.group(3).equalsIgnoreCase("i") ? 1024 : 1000;
+        final int exponent = Objects.nonNull(matcher.group(2)) ? ("kmgtpe").indexOf(matcher.group(2).toLowerCase()) +1 : 0;
+        final long number = Long.valueOf(matcher.group(1));
+        return number *(long)Math.pow(base, exponent);
     }
 }
