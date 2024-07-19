@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 public class Number {
 
     private static final Pattern PATTERN_NUMBER = Pattern
-            .compile("(?i)^((?:-){0,1}\\d+)(?:\\s*([kmgtpe])(i){0,1}){0,1}$");
+            .compile("(?i)^((?:-){0,1}\\d+(?:\\.\\d+){0,1})(?:\\s*([kmgtpe])(i){0,1}){0,1}$");
 
     public static long parseLong(final String text) {
         if (Objects.isNull(text))
@@ -38,7 +38,7 @@ public class Number {
         final int base = Objects.nonNull(matcher.group(3))
                 && matcher.group(3).equalsIgnoreCase("i") ? 1024 : 1000;
         final int exponent = Objects.nonNull(matcher.group(2)) ? ("kmgtpe").indexOf(matcher.group(2).toLowerCase()) +1 : 0;
-        final long number = Long.valueOf(matcher.group(1));
-        return number *(long)Math.pow(base, exponent);
+        final double number = Double.valueOf(matcher.group(1));
+        return (long)(number *Math.pow(base, exponent));
     }
 }
