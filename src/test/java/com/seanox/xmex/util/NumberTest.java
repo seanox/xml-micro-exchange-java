@@ -88,4 +88,19 @@ class NumberTest {
         Assertions.assertEquals(-5242880, Number.parseLong("-005 Mi"));
         Assertions.assertEquals(-5368709120L, Number.parseLong("-0005  gI"));
     }
+
+    @Test
+    void testparseLong_5() {
+        Assertions.assertEquals(512, Number.parseLong("0.5ki"));
+        Assertions.assertEquals(524288, Number.parseLong("00.5 Mi"));
+        Assertions.assertEquals(536870912, Number.parseLong("000.5  gI"));
+
+        Assertions.assertEquals(5632, Number.parseLong("05.5ki"));
+        Assertions.assertEquals(5767168, Number.parseLong("005.5 Mi"));
+        Assertions.assertEquals(5905580032L, Number.parseLong("0005.5  gI"));
+
+        Assertions.assertEquals(-5632, Number.parseLong("-05.5ki"));
+        Assertions.assertEquals(-5767168, Number.parseLong("-005.5 Mi"));
+        Assertions.assertEquals(-5905580032L, Number.parseLong("-0005.5  gI"));
+    }
 }
