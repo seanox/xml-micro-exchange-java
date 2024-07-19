@@ -3,7 +3,7 @@
  * im Folgenden Seanox Software Solutions oder kurz Seanox genannt.
  * Diese Software unterliegt der Version 2 der Apache License.
  *
- * XMEX XML-Micro-ExchangExchange
+ * XMEX XML-Micro-Exchange
  * Copyright (C) 2024 Seanox Software Solutions
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -20,6 +20,8 @@
  */
 package com.seanox.xmex.storage;
 
+import com.seanox.xmex.storage.StorageService.InsufficientStorageException;
+import com.seanox.xmex.storage.StorageService.StorageShare;
 import com.seanox.xmex.util.Codec;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,6 +30,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -59,7 +62,17 @@ class StorageFilter extends HttpFilter {
     private void doConnect(final HttpServletRequest request, final HttpServletResponse response,
                     final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
-        // TODO:
+        if (Strings.isNotEmpty(xpath))
+            throw new BadRequestState(
+                    new HttpHeader(HttpHeader.MESSAGE, "Unexpected XPath"));
+        try {
+            final StorageShare share = StorageService.share(storageIdentifier, xpath, false);
+            if (share.getRevision() == 0)
+                throw new CreatedState();
+            throw new NoContentState();
+        } catch (final InsufficientStorageException exception) {
+            throw new InsufficientStorageState();
+        }
     }
 
     private void doDelete(final HttpServletRequest request, final HttpServletResponse response,
@@ -135,6 +148,7 @@ class StorageFilter extends HttpFilter {
                 xpath = Codec.decodeBase64(xpath, StandardCharsets.UTF_8);
             else if (Codec.PATTERN_HEX.matcher(xpath).matches())
                 xpath = Codec.decodeHex(xpath, StandardCharsets.UTF_8);
+            xpath = xpath.trim();
 
             // Except CONNECT, OPTIONS and POST, all requests expect an XPath or
             // XPath function. CONNECT and OPTIONS do not use an (X)Path to
@@ -206,12 +220,24 @@ class StorageFilter extends HttpFilter {
         }
     }
 
+    private static class CreatedState extends AbstractHttpState {
+        private CreatedState(final HttpHeader... httpHeaders) {
+            super(HttpServletResponse.SC_CREATED, httpHeaders);
+        }
+    }
+
+    private static class InsufficientStorageState extends AbstractHttpState {
+        private InsufficientStorageState(final HttpHeader... httpHeaders) {
+            super(507, httpHeaders);
+        }
+    }
+
     @AllArgsConstructor(access=AccessLevel.PRIVATE)
     private static class HttpHeader {
 
         private static final String ORIGIN = HttpHeaders.ORIGIN;
         private static final String STORAGE = "Storage";
-        private static final String ALLOW = "Allow";
+        private static final String ALLOW = HttpHeaders.ALLOW;
         private static final String MESSAGE = "Message";
 
         private final String header;

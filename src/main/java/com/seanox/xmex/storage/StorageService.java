@@ -3,7 +3,7 @@
  * im Folgenden Seanox Software Solutions oder kurz Seanox genannt.
  * Diese Software unterliegt der Version 2 der Apache License.
  *
- * XMEX XML-Micro-ExchangExchange
+ * XMEX XML-Micro-Exchange
  * Copyright (C) 2024 Seanox Software Solutions
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -25,13 +25,39 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 @Getter
 @Service
 class StorageService extends HttpFilter {
 
-    @Value("${datasource.directory:./data}")
+    @Value("${storage.uri}")
+    private String serviceUri;
+
+    @Value("${storage.directory}")
     private String directory;
 
-    @Value("${datasource.service.uri:/xmex!}")
-    private String serviceUri;
+    @Value("#{T(com.seanox.xmex.util.Number).parseLong(${storage.space})")
+    private long space;
+
+    @Value("#{T(com.seanox.xmex.util.Number).parseLong(${storage.quantity})")
+    private int quantity;
+
+    @Value("#{T(com.seanox.xmex.util.DateTime).parseLong(${storage.expiration})")
+    private int expiration;
+
+    static StorageShare share(final String storageIdentifier, final String xpath, final boolean exclusive)
+            throws InsufficientStorageException {
+        return null;
+    }
+
+    static class StorageShare {
+
+        int getRevision() {
+            return -1;
+        }
+    }
+
+    static class InsufficientStorageException extends IOException {
+    }
 }

@@ -74,24 +74,6 @@
         </property>
       </activation>
     </profile>
-    <profile>
-      <id>test-accesslog-1</id>
-      <activation>
-        <property>
-          <name>spring.profiles.active</name>
-          <value>test-accesslog-1</value>
-        </property>
-      </activation>
-    </profile>
-    <profile>
-      <id>test-accesslog-2</id>
-      <activation>
-        <property>
-          <name>spring.profiles.active</name>
-          <value>test-accesslog-2</value>
-        </property>
-      </activation>
-    </profile>
   </profiles>
 
   <dependencies>

@@ -9,10 +9,10 @@ server:
   tomcat:
     max-keep-alive-requests: ${XMEX_SERVER_MAX_KEEP_ALIVE_REQUESTS:25}
     accesslog:
-      enabled: ${XMEX_SERVER_ACCESS_LOG:off}
+      enabled: ${XMEX_SERVER_ACCESS_LOG:on}
       buffered: off
       pattern: ${XMEX_SERVER_ACCESS_LOG_PATTERN:common}
-      directory: ${XMEX_SERVER_ACCESS_LOG_DIRECTORY:}
+      directory: ${XMEX_SERVER_ACCESS_LOG_DIRECTORY:/ccc}
 
 storage:
   uri: ${XMEX_STORAGE_URI:/xmex!}

@@ -57,7 +57,8 @@ public class Application extends SpringBootServletInitializer {
     }
 
     @Component
-    private static class ServerCustomizer implements WebServerFactoryCustomizer<ConfigurableTomcatWebServerFactory> {
+    private static class ServerCustomizer
+            implements WebServerFactoryCustomizer<ConfigurableTomcatWebServerFactory> {
 
         @Autowired
         private ServerProperties serverProperties;
