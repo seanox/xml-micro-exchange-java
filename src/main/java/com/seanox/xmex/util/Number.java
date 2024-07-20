@@ -41,4 +41,11 @@ public class Number {
         final double number = Double.valueOf(matcher.group(1));
         return (long)(number *Math.pow(base, exponent));
     }
+
+    static class NumberFormatException extends IllegalArgumentException {
+
+        NumberFormatException(final String message){
+            super(message);
+        }
+    }
 }

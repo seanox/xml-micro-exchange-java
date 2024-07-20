@@ -28,19 +28,19 @@ class NumberTest {
     @Test
     void testparseLong_1() {
         Assertions.assertThrows(
-                NumberFormatException.class,
+                Number.NumberFormatException.class,
                 () -> Number.parseLong(null));
         Assertions.assertThrows(
-                NumberFormatException.class,
+                Number.NumberFormatException.class,
                 () -> Number.parseLong(""));
         Assertions.assertThrows(
-                NumberFormatException.class,
+                Number.NumberFormatException.class,
                 () -> Number.parseLong(" 1"));
         Assertions.assertThrows(
-                NumberFormatException.class,
+                Number.NumberFormatException.class,
                 () -> Number.parseLong("1 "));
         Assertions.assertThrows(
-                NumberFormatException.class,
+                Number.NumberFormatException.class,
                 () -> Number.parseLong(" 1 "));
     }
 
