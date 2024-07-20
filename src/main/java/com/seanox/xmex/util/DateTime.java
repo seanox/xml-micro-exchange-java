@@ -27,14 +27,14 @@ import java.util.regex.Pattern;
 public class DateTime {
 
     private static final Pattern PATTERN_DURATION = Pattern
-            .compile("^(?i)([\\d\\.\\,]+)\\s*(ms|s|m|h)$");
+            .compile("^(?i)(\\d+(?:\\.\\d+){0,1})\\s*(ms|s|m|h)$");
 
-    public long parseDuration(final String input) {
-        if (Objects.isNull(input))
-            throw new IllegalArgumentException("Invalid input, duration is expected");
-        final Matcher matcher = PATTERN_DURATION.matcher(input.toLowerCase());
+    public static long parseDuration(final String text) {
+        if (Objects.isNull(text))
+            throw new DateTimeFormatException("Cannot parse null string");
+        final Matcher matcher = PATTERN_DURATION.matcher(text.toLowerCase());
         if (!matcher.find())
-            throw new IllegalArgumentException("Invalid input, duration is expected");
+            throw new DateTimeFormatException(String.format("For input string: %s", text));
         final double time = Double.parseDouble(matcher.group(1));
         final String unit = matcher.group(2);
         int factor = 1;
@@ -45,5 +45,12 @@ public class DateTime {
         else if (unit.equals("h"))
             factor *= 1000 *60 *60;
         return Math.round(time *factor);
+    }
+
+    static class DateTimeFormatException extends IllegalArgumentException {
+
+        DateTimeFormatException(final String message){
+            super(message);
+        }
     }
 }
