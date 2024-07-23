@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 public class Number {
 
-    private static final Pattern PATTERN_NUMBER = Pattern
+    public static final Pattern PATTERN_NUMBER = Pattern
             .compile("(?i)^((?:-){0,1}\\d+(?:\\.\\d+){0,1})(?:\\s*([kmgtpe])(i){0,1}){0,1}$");
 
     public static long parseLong(final String text) {
@@ -43,7 +43,6 @@ public class Number {
     }
 
     static class NumberFormatException extends IllegalArgumentException {
-
         NumberFormatException(final String message){
             super(message);
         }

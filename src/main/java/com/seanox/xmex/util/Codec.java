@@ -66,4 +66,15 @@ public class Codec {
             throw new IllegalArgumentException("Invalid input, Base64 encoding is expected");
         return new String(Base64.getDecoder().decode(input), charset);
     }
+
+    public static String encodeBase64(final String input) {
+        return Codec.encodeBase64(input, Charset.defaultCharset());
+    }
+    public static String encodeBase64(final String input, final Charset charset) {
+        if (Objects.isNull(input)
+                || input.isEmpty()
+                ||PATTERN_BASE64.matcher(input).matches())
+            return input;
+        return Base64.getEncoder().encodeToString(input.getBytes(charset));
+    }
 }

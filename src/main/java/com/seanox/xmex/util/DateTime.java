@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 public class DateTime {
 
-    private static final Pattern PATTERN_DURATION = Pattern
+    public static final Pattern PATTERN_DURATION = Pattern
             .compile("^(?i)(\\d+(?:\\.\\d+){0,1})\\s*(ms|s|m|h)$");
 
     public static long parseDuration(final String text) {
@@ -48,7 +48,6 @@ public class DateTime {
     }
 
     static class DateTimeFormatException extends IllegalArgumentException {
-
         DateTimeFormatException(final String message){
             super(message);
         }
