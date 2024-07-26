@@ -65,7 +65,7 @@ class StorageUnique implements CharSequence {
 
     @Override
     public CharSequence subSequence(final int start, final int end) {
-        return this.subSequence(start, end);
+        return this.unique.subSequence(start, end);
     }
 
     @Override
