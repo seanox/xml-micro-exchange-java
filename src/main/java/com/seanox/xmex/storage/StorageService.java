@@ -20,44 +20,126 @@
  */
 package com.seanox.xmex.storage;
 
+import com.seanox.xmex.util.Codec;
 import jakarta.servlet.http.HttpFilter;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.file.Files;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
-@Getter
+@Getter(AccessLevel.PACKAGE)
 @Service
 class StorageService extends HttpFilter {
 
-    @Value("${storage.uri}")
-    private String serviceUri;
+    /**
+     * Pattern for the Storage-Identifier
+     *     Group 0. Full match
+     *     Group 1. Storage
+     *     Group 2. Name of the root element (optional)
+     */
+    private static final Pattern PATTERN_STORAGE_IDENTIFIER = Pattern
+            .compile("^(\\w{1,64})(?:\\s+(\\w+)){0,1}$");
 
     @Value("${storage.directory}")
     private String directory;
 
-    @Value("#{T(com.seanox.xmex.util.Number).parseLong(${storage.space})")
+    @Value("#{T(com.seanox.xmex.util.Number).parseLong('${storage.space}')}")
     private long space;
 
-    @Value("#{T(com.seanox.xmex.util.Number).parseLong(${storage.quantity})")
+    @Value("#{T(com.seanox.xmex.util.Number).parseLong('${storage.quantity}')}")
     private int quantity;
 
-    @Value("#{T(com.seanox.xmex.util.DateTime).parseLong(${storage.expiration})")
+    @Value("#{T(com.seanox.xmex.util.DateTime).parseDuration('${storage.expiration}')}")
     private int expiration;
 
-    static StorageShare share(final String storageIdentifier, final String xpath, final boolean exclusive)
-            throws InsufficientStorageException {
-        return null;
+    StorageMeta touch(String storageIdentifier, boolean exclusive)
+            throws IOException {
+
+        if (Objects.isNull(storageIdentifier))
+            throw new StorageIdentifierException("Missing storage identifier");
+        if (!PATTERN_STORAGE_IDENTIFIER.matcher(storageIdentifier).matches())
+            throw new StorageIdentifierException("Invalid storage identifier");
+
+        final File storageDirectory = new File(this.directory);
+        if (storageDirectory.exists()
+                && !storageDirectory.isDirectory())
+            throw new IOException("Storage Data directory cannot be created due to a conflict");
+
+        if (!storageDirectory.exists()) {
+            synchronized (StorageService.class) {
+                if (!storageDirectory.exists())
+                    Files.createDirectories(storageDirectory.toPath());
+            }
+        }
+
+        final StorageMeta storageMeta = new StorageMeta();
+        final String storageName = storageIdentifier.replaceAll(PATTERN_STORAGE_IDENTIFIER.pattern(), "$1");
+        storageMeta.storage = Codec.encodeBase64(storageName);
+        final String storageRoot = storageIdentifier.replaceAll(PATTERN_STORAGE_IDENTIFIER.pattern(), "$2");
+        storageMeta.root = !storageRoot.isBlank() ? storageRoot : "data";
+
+        storageMeta.file = new File(this.directory, storageMeta.storage);
+        if (!storageMeta.file.exists()) {
+            synchronized (StorageService.class) {
+                if (!storageMeta.file.exists()) {
+                    storageMeta.unique = new StorageUnique().toString();
+                    final String storageContent = String.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                            + "<%s ___rev=\"\">", storageMeta.root, storageMeta.unique);
+                    storageMeta.stream = new RandomAccessFile(storageMeta.file, !exclusive ? "r" : "rw");
+                    storageMeta.channel = storageMeta.stream.getChannel();
+                    storageMeta.lock = storageMeta.channel.lock(0L, Long.MAX_VALUE, !exclusive);
+                }
+            }
+        }
+
+        if (Objects.isNull(storageMeta.lock)) {
+            storageMeta.stream = new RandomAccessFile(storageMeta.file, !exclusive ? "r" : "rw");
+            storageMeta.channel = storageMeta.stream.getChannel();
+            storageMeta.lock = storageMeta.channel.lock(0L, Long.MAX_VALUE, !exclusive);
+            storageMeta.unique = new StorageUnique().toString();
+        }
+
+        return storageMeta;
     }
 
-    static class StorageShare {
+    static class StorageMeta implements AutoCloseable {
 
-        int getRevision() {
-            return -1;
+        @Getter(AccessLevel.PACKAGE)
+        private String unique;
+        @Getter(AccessLevel.PACKAGE)
+        private String revision;
+
+        private String storage;
+        private String root;
+        private File file;
+        private RandomAccessFile stream;
+        private FileChannel channel;
+        private FileLock lock;
+
+        @Override
+        public void close() throws Exception {
+            this.lock.close();
+            this.channel.close();
+            this.stream.close();
         }
     }
 
-    static class InsufficientStorageException extends IOException {
+    static class StorageInsufficientException extends IOException {
+    }
+
+    static class StorageIdentifierException extends IllegalArgumentException {
+
+        StorageIdentifierException(final String message) {
+            super(message);
+        }
     }
 }
