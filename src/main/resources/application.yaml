@@ -7,17 +7,31 @@ server:
     key-store: ${XMEX_SERVER_SSL_KEY_STORE:keystore}
     key-store-password: ${XMEX_SERVER_SSL_KEY_STORE_PASSWORD:changeIt}
   tomcat:
-    max-keep-alive-requests: ${XMEX_SERVER_MAX_KEEP_ALIVE_REQUESTS:25}
+    max-keep-alive-requests: ${XMEX_SERVER_KEEP_ALIVE_MAX_REQUESTS:25}
+    keep-alive-timeout: ${XMEX_SERVER_CONNECTION_TIMEOUT:60000}
+    max-http-form-post-size: ${XMEX_SERVER_MAX_REQUESTS_SIZE:1MB}
     accesslog:
       enabled: ${XMEX_SERVER_ACCESS_LOG:on}
       buffered: off
       pattern: ${XMEX_SERVER_ACCESS_LOG_PATTERN:common}
       directory: ${XMEX_SERVER_ACCESS_LOG_DIRECTORY:/ccc}
+    max-connections: ${XMEX_SERVER_MAX_CONNECTIONS:4096}
+    threads:
+      max: ${XMEX_SERVER_MAX_THREADS:250}
+    accept-count: ${XMEX_SERVER_MAX_CONNECTIONS:4096}
+    connection-timeout: ${XMEX_SERVER_CONNECTION_TIMEOUT:60000}
+
+spring:
+  servlet:
+    multipart:
+      enabled: false
+      max-file-size: ${XMEX_SERVER_MAX_REQUESTS_SIZE:1MB}
+      max-request-size: ${XMEX_SERVER_MAX_REQUESTS_SIZE:1MB}
 
 storage:
   uri: ${XMEX_STORAGE_URI:/xmex!}
   directory: ${XMEX_STORAGE_DIRECTORY:./data}
-  space: ${XMEX_STORAGE_SPACE:256K}
+  space: ${XMEX_STORAGE_SPACE:256KB}
   quantity: ${XMEX_STORAGE_QUANTITY:65535}
   expiration: ${XMEX_STORAGE_EXPIRATION:900s}
 
