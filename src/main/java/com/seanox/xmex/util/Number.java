@@ -26,13 +26,28 @@ import java.util.regex.Pattern;
 
 public class Number {
 
+    public static final Pattern PATTERN_NUMBER_BINARY = Pattern
+            .compile("(?i)^((?:-){0,1}\\d+(?:\\.\\d+){0,1})(?:\\s*([kmgtpe])(i){0,1}(b){0,1}){0,1}$");
+
     public static final Pattern PATTERN_NUMBER = Pattern
-            .compile("(?i)^((?:-){0,1}\\d+(?:\\.\\d+){0,1})(?:\\s*([kmgtpe])(i){0,1}){0,1}$");
+            .compile("(?i)^((?:-){0,1}\\d+(?:\\.\\d+){0,1})(?:\\s*([kmgtpe])(b){0,1}){0,1}$");
+
+    public static long parseLong(final String text, final boolean binary) {
+        if (Objects.isNull(text))
+            throw new NumberFormatException("Cannot parse null string");
+        final Matcher matcher = PATTERN_NUMBER.matcher(text);
+        if (!matcher.find())
+            throw new NumberFormatException(String.format("For input string: %s", text));
+        final int base = binary ? 1024 : 1000;
+        final int exponent = Objects.nonNull(matcher.group(2)) ? ("kmgtpe").indexOf(matcher.group(2).toLowerCase()) +1 : 0;
+        final double number = Double.valueOf(matcher.group(1));
+        return (long)(number *Math.pow(base, exponent));
+    }
 
     public static long parseLong(final String text) {
         if (Objects.isNull(text))
             throw new NumberFormatException("Cannot parse null string");
-        final Matcher matcher = PATTERN_NUMBER.matcher(text);
+        final Matcher matcher = PATTERN_NUMBER_BINARY.matcher(text);
         if (!matcher.find())
             throw new NumberFormatException(String.format("For input string: %s", text));
         final int base = Objects.nonNull(matcher.group(3))
