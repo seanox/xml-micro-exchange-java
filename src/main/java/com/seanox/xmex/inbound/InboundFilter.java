@@ -54,8 +54,8 @@ class InboundFilter extends HttpFilter {
             final String requestUri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
             final String queryString = request.getQueryString();
 
-            // If the HTTPS connector is used, all HTTP requests, with exception of
-            // ACME requests, are redirected to HTTPS.
+            // If the HTTPS connector is used, all HTTP requests, with exception
+            // of ACME requests, are redirected to HTTPS.
             if (!request.isSecure()
                     && isSecureConnection
                     && !requestUri.equals(acmeTokenUri)) {
