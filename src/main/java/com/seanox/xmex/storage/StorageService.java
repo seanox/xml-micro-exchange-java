@@ -32,11 +32,11 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-@Getter(AccessLevel.PACKAGE)
 @Service
 class StorageService extends HttpFilter {
 
@@ -61,7 +61,12 @@ class StorageService extends HttpFilter {
     @Value("#{T(com.seanox.xmex.util.DateTime).parseDuration('${storage.expiration}')}")
     private int expiration;
 
-    StorageMeta touch(String storageIdentifier, boolean exclusive)
+    StorageMeta touch(final String storageIdentifier)
+            throws IOException {
+        return this.touch(storageIdentifier, false);
+    }
+
+    StorageMeta touch(final String storageIdentifier, final boolean exclusive)
             throws IOException {
 
         if (Objects.isNull(storageIdentifier))
@@ -83,7 +88,7 @@ class StorageService extends HttpFilter {
 
         final StorageMeta storageMeta = new StorageMeta();
         final String storageName = storageIdentifier.replaceAll(PATTERN_STORAGE_IDENTIFIER.pattern(), "$1");
-        storageMeta.storage = Codec.encodeBase64(storageName);
+        storageMeta.storage = Codec.encodeBase64(storageName, StandardCharsets.UTF_8);
         final String storageRoot = storageIdentifier.replaceAll(PATTERN_STORAGE_IDENTIFIER.pattern(), "$2");
         storageMeta.root = !storageRoot.isBlank() ? storageRoot : "data";
 
@@ -93,7 +98,7 @@ class StorageService extends HttpFilter {
                 if (!storageMeta.file.exists()) {
                     storageMeta.unique = new StorageUnique().toString();
                     final String storageContent = String.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                            + "<%s ___rev=\"\">", storageMeta.root, storageMeta.unique);
+                            + "<%s ___rev=\"%s\">", storageMeta.root, storageMeta.unique);
                     storageMeta.stream = new RandomAccessFile(storageMeta.file, !exclusive ? "r" : "rw");
                     storageMeta.channel = storageMeta.stream.getChannel();
                     storageMeta.lock = storageMeta.channel.lock(0L, Long.MAX_VALUE, !exclusive);
@@ -126,7 +131,7 @@ class StorageService extends HttpFilter {
         private FileLock lock;
 
         @Override
-        public void close() throws Exception {
+        public void close() throws IOException {
             this.lock.close();
             this.channel.close();
             this.stream.close();
