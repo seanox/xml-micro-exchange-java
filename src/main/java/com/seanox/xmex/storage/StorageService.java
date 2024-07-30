@@ -25,6 +25,8 @@ import jakarta.servlet.http.HttpFilter;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -38,6 +40,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Service
+@EnableScheduling
 class StorageService extends HttpFilter {
 
     /**
@@ -116,12 +119,32 @@ class StorageService extends HttpFilter {
         return storageMeta;
     }
 
+    @Scheduled(fixedRateString="#{T(com.seanox.xmex.util.DateTime).parseDuration('${storage.expiration}')}")
+    private void cleanUpExpiredStorages() {
+        final File storageDirectory = new File(this.directory);
+        if (!storageDirectory.exists()
+                || !storageDirectory.isDirectory())
+            return;
+        final long expirationTime = System.currentTimeMillis() -this.expiration;
+        final Deceleration deceleration = new Deceleration(25);
+        for (final File storageFile : storageDirectory.listFiles()) {
+            if (!deceleration.next())
+                break;
+            if (storageFile.exists()
+                    && storageFile.isFile()
+                    && storageFile.lastModified() < expirationTime)
+                storageFile.delete();
+        }
+    }
+
     static class StorageMeta implements AutoCloseable {
 
         @Getter(AccessLevel.PACKAGE)
-        private String unique;
+        private String identifier;
         @Getter(AccessLevel.PACKAGE)
         private String revision;
+        @Getter(AccessLevel.PACKAGE)
+        private String unique;
 
         private String storage;
         private String root;
@@ -145,6 +168,30 @@ class StorageService extends HttpFilter {
 
         StorageIdentifierException(final String message) {
             super(message);
+        }
+    }
+
+    private static class Deceleration {
+
+        private long milliseconds;
+        private long timing;
+
+        Deceleration(final long milliseconds) {
+            this.milliseconds = milliseconds;
+            this.timing = System.currentTimeMillis();
+        }
+
+        boolean next() {
+            if (this.milliseconds < 0)
+                return false;
+            if (System.currentTimeMillis() < this.timing +this.milliseconds)
+                return true;
+            try {Thread.sleep(this.milliseconds);
+            } catch (InterruptedException exception) {
+                this.milliseconds = -1;
+            }
+            this.timing = System.currentTimeMillis();
+            return true;
         }
     }
 }

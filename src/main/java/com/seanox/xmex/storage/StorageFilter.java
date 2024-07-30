@@ -20,8 +20,9 @@
  */
 package com.seanox.xmex.storage;
 
-import com.seanox.xmex.storage.StorageService.InsufficientStorageException;
-import com.seanox.xmex.storage.StorageService.StorageShare;
+import com.seanox.xmex.storage.StorageService.StorageIdentifierException;
+import com.seanox.xmex.storage.StorageService.StorageInsufficientException;
+import com.seanox.xmex.storage.StorageService.StorageMeta;
 import com.seanox.xmex.util.Codec;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,16 +33,15 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 @Component
 @Order(2)
@@ -50,29 +50,26 @@ class StorageFilter extends HttpFilter {
     @Autowired
     private StorageService storageService;
 
-    /**
-     * Pattern for the Storage header
-     *     Group 0. Full match
-     *     Group 1. Storage
-     *     Group 2. Name of the root element (optional)
-     */
-    private static final Pattern PATTERN_HEADER_STORAGE = Pattern
-            .compile("^(\\w{1,64})(?:\\s+(\\w+)){0,1}$");
+    @Value("${storage.uri}")
+    private String storageServiceUri;
+
+    @Value("#{T(com.seanox.xmex.util.Number).parseLong('${spring.servlet.multipart.max-request-size}')}")
+    private long storageServiceMaxRequestSize;
 
     private void doConnect(final HttpServletRequest request, final HttpServletResponse response,
                     final String storageIdentifier, final String xpath)
-            throws ServletException, IOException {
+            throws IOException {
+
         if (Strings.isNotEmpty(xpath))
-            throw new BadRequestState(
-                    new HttpHeader(HttpHeader.MESSAGE, "Unexpected XPath"));
-        try {
-            final StorageShare share = StorageService.share(storageIdentifier, xpath, false);
-            if (share.getRevision() == 0)
+            throw new BadRequestState(new HttpHeader(HttpHeader.MESSAGE, "Unexpected XPath"));
+        try (final StorageMeta storageMeta = this.storageService.touch(storageIdentifier)) {
+            // TODO: Storage meta information in response header
+            if (storageMeta.getUnique().equals(storageMeta.getRevision()))
                 throw new CreatedState();
             throw new NoContentState();
-        } catch (final InsufficientStorageException exception) {
+        } catch (final StorageInsufficientException exception) {
             throw new InsufficientStorageState();
-        }
+       }
     }
 
     private void doDelete(final HttpServletRequest request, final HttpServletResponse response,
@@ -93,21 +90,40 @@ class StorageFilter extends HttpFilter {
         // TODO:
     }
 
+    private byte[] readRequestPayload(final HttpServletRequest request, final String... acceptContentTypes)
+            throws IOException {
+        if (request.getContentLength() <= 0)
+            throw new ContentLengthRequiredState();
+        final int requestContentLength = request.getContentLength();
+        if (requestContentLength > Integer.MAX_VALUE
+                || requestContentLength >= this.storageServiceMaxRequestSize)
+            throw new ContentTooLargeState();
+        // TODO: check acceptContentTypes
+        final byte[] requestPayload = new byte[requestContentLength];
+        if (request.getInputStream().read(requestPayload)
+                != requestContentLength)
+            throw new BadRequestState(new HttpHeader(HttpHeader.MESSAGE, "Conflicting content length"));
+        return requestPayload;
+    }
+
     private void doPatch(final HttpServletRequest request, final HttpServletResponse response,
                     final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
+        final byte[] requestPayload = this.readRequestPayload(request);
         // TODO:
     }
 
     private void doPost(final HttpServletRequest request, final HttpServletResponse response,
                     final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
+        final byte[] requestPayload = this.readRequestPayload(request);
         // TODO:
     }
 
     private void doPut(final HttpServletRequest request, final HttpServletResponse response,
                     final String storageIdentifier, final String xpath)
             throws ServletException, IOException {
+        final byte[] requestPayload = this.readRequestPayload(request);
         // TODO:
     }
 
@@ -116,7 +132,7 @@ class StorageFilter extends HttpFilter {
             throws ServletException, IOException {
 
         final String requestUri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
-        if (!requestUri.startsWith(this.storageService.getServiceUri())) {
+        if (!requestUri.startsWith(this.storageServiceUri)) {
             chain.doFilter(request, response);
             return;
         }
@@ -131,19 +147,11 @@ class StorageFilter extends HttpFilter {
                     && Objects.isNull(request.getHeader(HttpHeader.STORAGE)))
                 throw new NoContentState();
 
-            final String storageIdentifier = request.getHeader(HttpHeader.STORAGE);
-            if (Objects.isNull(storageIdentifier))
-                throw new BadRequestState(
-                        new HttpHeader(HttpHeader.MESSAGE, "Missing storage identifier"));
-            if (!PATTERN_HEADER_STORAGE.matcher(storageIdentifier).matches())
-                throw new BadRequestState(
-                        new HttpHeader(HttpHeader.MESSAGE, "Invalid storage identifier"));
-
             final StringBuilder xpathBuilder = new StringBuilder();
             xpathBuilder.append(requestUri);
             if (Objects.nonNull(request.getQueryString()))
-                xpathBuilder.append("?").append(URLDecoder.decode(request.getQueryString(), Charset.defaultCharset()));
-            String xpath = xpathBuilder.substring(this.storageService.getServiceUri().length());
+                xpathBuilder.append("?").append(URLDecoder.decode(request.getQueryString(), StandardCharsets.UTF_8));
+            String xpath = xpathBuilder.substring(this.storageServiceUri.length());
             if (Codec.PATTERN_BASE64.matcher(xpath).matches())
                 xpath = Codec.decodeBase64(xpath, StandardCharsets.UTF_8);
             else if (Codec.PATTERN_HEX.matcher(xpath).matches())
@@ -161,6 +169,8 @@ class StorageFilter extends HttpFilter {
                     && !requestMethod.equals(HttpMethod.OPTIONS)
                     && !requestMethod.equals(HttpMethod.POST))
                 xpath = "/";
+
+            final String storageIdentifier = request.getHeader(HttpHeader.STORAGE);
 
             switch (request.getMethod().toUpperCase()) {
                 case HttpMethod.CONNECT:
@@ -182,6 +192,9 @@ class StorageFilter extends HttpFilter {
                             new HttpHeader(HttpHeader.ALLOW,
                                     String.join(", ", HttpMethod.listAllowedMethods())));
             }
+        } catch (final StorageIdentifierException storageIdentifierException) {
+            throw new BadRequestState(
+                    new HttpHeader(HttpHeader.MESSAGE, storageIdentifierException.getMessage()));
         } catch (final State state) {
             // TODO:
         }
@@ -229,6 +242,24 @@ class StorageFilter extends HttpFilter {
     private static class InsufficientStorageState extends AbstractHttpState {
         private InsufficientStorageState(final HttpHeader... httpHeaders) {
             super(507, httpHeaders);
+        }
+    }
+
+    private static class ContentLengthRequiredState extends AbstractHttpState {
+        private ContentLengthRequiredState(final HttpHeader... httpHeaders) {
+            super(411, httpHeaders);
+        }
+    }
+
+    private static class ContentTooLargeState extends AbstractHttpState {
+        private ContentTooLargeState(final HttpHeader... httpHeaders) {
+            super(413, httpHeaders);
+        }
+    }
+
+    private static class UnsupportedMediaTypeState extends AbstractHttpState {
+        private UnsupportedMediaTypeState(final HttpHeader... httpHeaders) {
+            super(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, httpHeaders);
         }
     }
 
