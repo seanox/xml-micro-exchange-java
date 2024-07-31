@@ -41,6 +41,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Component
@@ -59,14 +61,12 @@ class StorageFilter extends HttpFilter {
     private void doConnect(final HttpServletRequest request, final HttpServletResponse response,
                     final String storageIdentifier, final String xpath)
             throws IOException {
-
         if (Strings.isNotEmpty(xpath))
             throw new BadRequestState(new HttpHeader(HttpHeader.MESSAGE, "Unexpected XPath"));
         try (final StorageMeta storageMeta = this.storageService.touch(storageIdentifier)) {
-            // TODO: Storage meta information in response header
             if (storageMeta.getUnique().equals(storageMeta.getRevision()))
-                throw new CreatedState();
-            throw new NoContentState();
+                throw new CreatedState(storageMeta);
+            throw new NoContentState(storageMeta);
         } catch (final StorageInsufficientException exception) {
             throw new InsufficientStorageState();
        }
@@ -207,11 +207,25 @@ class StorageFilter extends HttpFilter {
 
         private final int httpStatus;
 
-        private final HttpHeader[] httpHeaders;
+        private final List<HttpHeader> httpHeaders;
+
+        private AbstractHttpState(final int httpStatus, final StorageMeta storageMeta, final HttpHeader... httpHeaders) {
+            this.httpStatus = httpStatus;
+            this.httpHeaders = Arrays.asList(httpHeaders);
+            if (Objects.isNull(storageMeta))
+                return;
+
+            // TODO: Storage:
+            // TODO: Storage-Revision:
+            // TODO: Storage-Space:
+            // TODO: Storage-Last-Modified:
+            // TODO: Storage-Expiration:
+            // TODO: Storage-Expiration-Time:
+            // TODO: Execution-Time:
+        }
 
         private AbstractHttpState(final int httpStatus, final HttpHeader... httpHeaders) {
-            this.httpStatus = httpStatus;
-            this.httpHeaders = httpHeaders;
+            this(httpStatus, null, httpHeaders);
         }
     }
 
@@ -231,11 +245,19 @@ class StorageFilter extends HttpFilter {
         private NoContentState(final HttpHeader... httpHeaders) {
             super(HttpServletResponse.SC_NO_CONTENT, httpHeaders);
         }
+
+        private NoContentState(final StorageMeta storageMeta, final HttpHeader... httpHeaders) {
+            super(HttpServletResponse.SC_NO_CONTENT, storageMeta, httpHeaders);
+        }
     }
 
     private static class CreatedState extends AbstractHttpState {
         private CreatedState(final HttpHeader... httpHeaders) {
             super(HttpServletResponse.SC_CREATED, httpHeaders);
+        }
+
+        private CreatedState(final StorageMeta storageMeta, final HttpHeader... httpHeaders) {
+            super(HttpServletResponse.SC_CREATED, storageMeta, httpHeaders);
         }
     }
 
