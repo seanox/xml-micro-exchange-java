@@ -175,4 +175,4 @@ TODO:
 # Contact
 [Issues](https://github.com/seanox/xml-online-storage/issues)  
 [Requests](https://github.com/seanox/xml-online-storage/pulls)  
-[Mail](http://seanox.com/contact) 
+[Mail](https://seanox.com/contact)
