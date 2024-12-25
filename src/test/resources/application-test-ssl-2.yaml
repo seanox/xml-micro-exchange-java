@@ -1,8 +1,0 @@
-server:
-  ssl:
-    enabled: on
-
-acme:
-  hash: ---B
-  token:
-    uri: /acme/0123456789ABCDEF
