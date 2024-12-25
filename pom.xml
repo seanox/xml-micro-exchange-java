@@ -46,36 +46,6 @@
     <encoding>UTF-8</encoding>
   </properties>
 
-  <profiles>
-    <profile>
-      <id>acme</id>
-      <activation>
-        <property>
-          <name>spring.profiles.active</name>
-          <value>acme</value>
-        </property>
-      </activation>
-    </profile>
-    <profile>
-      <id>test-ssl-1</id>
-      <activation>
-        <property>
-          <name>spring.profiles.active</name>
-          <value>test-ssl-1</value>
-        </property>
-      </activation>
-    </profile>
-    <profile>
-      <id>test-ssl-2</id>
-      <activation>
-        <property>
-          <name>spring.profiles.active</name>
-          <value>test-ssl-2</value>
-        </property>
-      </activation>
-    </profile>
-  </profiles>
-
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>

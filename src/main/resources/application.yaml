@@ -11,10 +11,10 @@ server:
     keep-alive-timeout: ${XMEX_SERVER_CONNECTION_TIMEOUT:60000}
     max-http-form-post-size: ${XMEX_SERVER_MAX_REQUESTS_SIZE:1MB}
     accesslog:
-      enabled: ${XMEX_SERVER_ACCESS_LOG:on}
+      enabled: ${XMEX_SERVER_ACCESS_LOG:off}
       buffered: off
       pattern: ${XMEX_SERVER_ACCESS_LOG_PATTERN:common}
-      directory: ${XMEX_SERVER_ACCESS_LOG_DIRECTORY:/ccc}
+      directory: ${XMEX_SERVER_ACCESS_LOG_DIRECTORY:./logs}
     max-connections: ${XMEX_SERVER_MAX_CONNECTIONS:4096}
     threads:
       max: ${XMEX_SERVER_MAX_THREADS:250}
@@ -34,13 +34,12 @@ storage:
   space: ${XMEX_STORAGE_SPACE:256KB}
   quantity: ${XMEX_STORAGE_QUANTITY:65535}
   expiration: ${XMEX_STORAGE_EXPIRATION:900s}
-
-acme:
-  port: ${XMEX_ACME_PORT:80}
-  hash: ${XMEX_ACME_HASH:}
-  token:
-    uri: ${XMEX_ACME_TOKEN_URI:}
+  revision-type: ${XMEX_STORAGE_REVISION_TYPE:timestamp}
 
 content:
   directory: ${XMEX_CONTENT_DIRECTORY:./content}
-  default: ${XMEX_CONTENT_DEFAULT:index.htm index.html index.xhtml}
+  default: ${XMEX_CONTENT_DEFAULT:index.html index.xhtml openAPI.html openAPI.xhtml}
+  redirect: ${XMEX_CONTENT_REDIRECT}
+
+options:
+  debug: ${XMEX_DEBUG_MODE:off}
