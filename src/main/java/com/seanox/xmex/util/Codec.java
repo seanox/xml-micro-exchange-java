@@ -73,7 +73,7 @@ public class Codec {
     public static String encodeBase64(final String input, final Charset charset) {
         if (Objects.isNull(input)
                 || input.isEmpty()
-                ||PATTERN_BASE64.matcher(input).matches())
+                || PATTERN_BASE64.matcher(input).matches())
             return input;
         return Base64.getEncoder().encodeToString(input.getBytes(charset));
     }

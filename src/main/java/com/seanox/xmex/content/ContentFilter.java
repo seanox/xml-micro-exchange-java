@@ -29,6 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,10 +52,20 @@ class ContentFilter extends HttpFilter {
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws ServletException, IOException {
+
         HttpServletRequest contentRequest = request;
         final String contentRequestUri = request.getRequestURI();
         final String contentRequestPath = this.contentService.getContentEntryPath(request);
         final File contentRequestEntry = this.contentService.getContentEntry(contentRequestPath);
+
+        final String contentRedirect = this.contentService.getContentRedirect();
+        if (StringUtils.hasText(contentRedirect)) {
+            if (contentRedirect.endsWith("/"))
+                response.sendRedirect(String.format("%s", contentRequestUri));
+            else response.sendRedirect(String.format("%s/", contentRequestUri));
+            return;
+        }
+
         if (contentRequestEntry.isDirectory()) {
             if (!contentRequestUri.endsWith("/")) {
                 response.sendRedirect(String.format("%s/", contentRequestUri));
@@ -73,6 +84,7 @@ class ContentFilter extends HttpFilter {
                 };
             }
         }
+
         chain.doFilter(contentRequest, response);
     }
 }

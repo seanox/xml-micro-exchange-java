@@ -44,6 +44,9 @@ class ContentService {
     @Value("#{('${content.default}').split('[,\\s]+')}")
     private String[] contentDefaults;
 
+    @Value("#{('${content.redirect}').trim()}")
+    private String contentRedirect;
+
     File getContentEntry(final String contentEntryPath) {
         if (Objects.isNull(contentEntryPath))
             return null;

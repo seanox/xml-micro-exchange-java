@@ -33,8 +33,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @CommonsLog
@@ -45,21 +43,16 @@ class InboundFilter extends HttpFilter {
     @Value("#{new Boolean(('${server.ssl.enabled:}').matches('^(on|true)$'))}")
     private boolean isSecureConnection;
 
-    @Value("${acme.token.uri:}")
-    private String acmeTokenUri;
-
     @Override
     protected void doFilter(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain) {
-        try {
-            final String requestUri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
-            final String queryString = request.getQueryString();
 
-            // If the HTTPS connector is used, all HTTP requests, with exception
-            // of ACME requests, are redirected to HTTPS.
+        // If HTTPS is active, all HTTP requests are redirected to HTTPS
+
+        try {
             if (!request.isSecure()
-                    && isSecureConnection
-                    && !requestUri.equals(acmeTokenUri)) {
+                    && isSecureConnection) {
                 final StringBuilder requestUrl = new StringBuilder(request.getRequestURL().toString());
+                final String queryString = request.getQueryString();
                 if (Objects.nonNull(queryString)
                         && !queryString.isBlank())
                     requestUrl.append("?").append(queryString);
@@ -75,11 +68,9 @@ class InboundFilter extends HttpFilter {
 
             final String uniqueTime = Long.toString(Math.abs(System.currentTimeMillis()), 36);
             final String uniqueHash = Long.toString(Math.abs(uniqueTime.hashCode()), 36);
-            final String uniqueText = new StringBuilder()
-                    .append(Long.toString(uniqueHash.length(), 36))
-                    .append(uniqueHash)
-                    .append(uniqueTime)
-                    .toString();
+            final String uniqueText = Long.toString(uniqueHash.length(), 36)
+                    + uniqueHash
+                    + uniqueTime;
 
             LogFactory.getLog(Application.class)
                     .error(String.format("Unexpected error occurred: #%s", uniqueText), throwable);

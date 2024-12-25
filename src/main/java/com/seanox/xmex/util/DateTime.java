@@ -20,11 +20,14 @@
  */
 package com.seanox.xmex.util;
 
+import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DateTime {
+
+    public static final SimpleDateFormat TIMESTAMP_RFC822_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 
     public static final Pattern PATTERN_DURATION = Pattern
             .compile("^(?i)(\\d+(?:\\.\\d+){0,1})\\s*(ms|s|m|h)$");
